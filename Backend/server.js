@@ -27,7 +27,7 @@ app.use('/api/payments', require('./Routes/PaymentRoute'));
 app.use('/api/prescriptions', require('./Routes/PrescriptionRoute'));
 app.use('/api/insurances', require('./Routes/InsuranceRoute'));
 app.use('/api/notifications', require('./Routes/NotificationRoute'));
-app.use('/api/loginattempts', require('./Routes/LogiAttemptRoute'));
+app.use('/api/loginattempts', require('./Routes/LoginAttemptRoute'));
 app.use('/api/auditlogs', require('./Routes/AuditLogRoute'));
 app.use('/api/access', require('./Routes/AccessRoute'));
 
