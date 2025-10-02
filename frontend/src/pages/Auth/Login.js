@@ -20,6 +20,7 @@ function Login() {
 
       // Save token to localStorage
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
       // Update context
       setUser(user);

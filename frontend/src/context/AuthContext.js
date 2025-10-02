@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Load user from localStorage (if token exists)
     const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
     if (token) {
       setUser({ token }); // Later we can decode token
     }
