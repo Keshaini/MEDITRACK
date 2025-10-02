@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
+import PrivateRoute from "./components/common/PrivateRoute";
 
 // Auth pages
 import Login from "./pages/Auth/Login";
