@@ -1,3 +1,4 @@
+// filepath: src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
@@ -22,11 +23,12 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        <Route path="*" element={<h1 className="text-center mt-10">404 Not Found</h1>} />
+        <Route
+          path="*"
+          element={<h1 className="text-center mt-10">404 Not Found</h1>}
+        />
       </Routes>
       <Footer />
     </Router>
   );
 }
-           
-                  
