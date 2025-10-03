@@ -102,7 +102,7 @@ const Register = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mb-4">
             <span className="text-3xl">🏥</span>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Patient Registration</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Signup</h2>
           <p className="text-gray-600">Create your Meditrack account</p>
         </div>
 
@@ -128,7 +128,7 @@ const Register = () => {
                   className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none ${
                     errors.firstName ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
                   }`}
-                  placeholder="John"
+                  placeholder="First Name"
                 />
                 {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName}</p>}
               </div>
@@ -146,7 +146,7 @@ const Register = () => {
                   className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none ${
                     errors.lastName ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
                   }`}
-                  placeholder="Doe"
+                  placeholder="Last Name"
                 />
                 {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
               </div>
