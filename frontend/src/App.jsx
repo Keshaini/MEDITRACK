@@ -7,19 +7,6 @@ import PrivateRoute from "./components/common/PrivateRoute";
 // Auth pages
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
-import PatientRegistration from "./components/auth/PatientRegistration";
-
-// Health Log pages
-import AddHealthLog from "./components/healthlog/AddHealthLog";
-import EditHealthLog from "./components/healthlog/EditHealthLog";
-
-// Medical History pages
-import AddMedicalHistory from "./components/medicalhistory/AddMedicalHistory";
-import ViewMedicalHistory from "./components/medicalhistory/ViewMedicalHistory";
-
-// Doctor-Patient pages
-import AssignDoctor from "./components/doctorpatient/AssignDoctor";
-import ViewAssignments from "./components/doctorpatient/ViewAssignments";
 
 // Other pages
 import Home from "./pages/Home";
