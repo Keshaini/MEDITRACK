@@ -1,23 +1,33 @@
-// src/context/AuthContext.jsx
 import { createContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext();
 
-export const AuthProvider = ({ children }) => {
+export default function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load user from localStorage (if token exists)
+    // check if token exists
     const token = localStorage.getItem("token");
-    const user = localStorage.getItem("user");
     if (token) {
-      setUser({ token }); // Later we can decode token
+      setUser({ token }); // you can later fetch user details here
     }
+    setLoading(false);
   }, []);
 
+  const login = (data) => {
+    localStorage.setItem("token", data.token);
+    setUser(data.user);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
-};
+}

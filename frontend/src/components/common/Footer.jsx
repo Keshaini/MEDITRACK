@@ -1,10 +1,13 @@
-// src/components/common/Footer.js
-function Footer() {
+import React from "react";
+import { Link } from "react-router-dom";
+
+const Footer = () => {
   return (
-    <footer style={{ padding: "10px", background: "#f5f5f5", textAlign: "center" }}>
-      <p>&copy; {new Date().getFullYear()} MediTrack. All rights reserved.</p>
+    <footer className="bg-gray-900 text-white py-4 text-center">
+      <p>© 2025 MediTrack. All rights reserved.</p>
+      <Link to="/about" className="ml-2 text-blue-400">About</Link>
     </footer>
   );
-}
+};
 
 export default Footer;

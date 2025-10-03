@@ -1,17 +1,14 @@
-// src/components/common/Navbar.js
 import { Link } from "react-router-dom";
 
-function Navbar() {
+export default function Navbar() {
   return (
-    <nav style={{ padding: "10px", background: "#1976d2", color: "white" }}>
-      <Link to="/" style={{ marginRight: "15px", color: "white" }}>Home</Link>
-      <Link to="/login" style={{ marginRight: "15px", color: "white" }}>Login</Link>
-      <Link to="/register" style={{ marginRight: "15px", color: "white" }}>Register</Link>
-      <Link to="/healthlogs/add" style={{ marginRight: "15px", color: "white" }}>Add Health Log</Link>
-      <Link to="/medicalhistory/add" style={{ marginRight: "15px", color: "white" }}>Add Medical History</Link>
-      <Link to="/doctor/assign" style={{ marginRight: "15px", color: "white" }}>Assign Doctor</Link>
+    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
+      <h1 className="text-xl font-bold">MediTrack</h1>
+      <div className="space-x-4">
+        <Link to="/" className="hover:text-gray-200">Home</Link>
+        <Link to="/login" className="hover:text-gray-200">Login</Link>
+        <Link to="/register" className="hover:text-gray-200">Register</Link>
+      </div>
     </nav>
   );
 }
-
-export default Navbar;

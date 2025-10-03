@@ -1,7 +1,7 @@
 // filepath: d:\SLIIT Uni\Y2S2\ITP\ITP Project - MERN\MEDITRACK\frontend\src\main.js
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import App from "./App.jsx";
 import { AuthProvider } from "./context/AuthContext";
 import "./index.css"; // or your main CSS file
 
