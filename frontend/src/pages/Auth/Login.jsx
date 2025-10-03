@@ -1,4 +1,4 @@
-// src/pages/Auth/Login.js
+// src/pages/Auth/Login.jsx
 import { useState, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
