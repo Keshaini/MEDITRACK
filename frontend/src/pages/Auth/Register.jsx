@@ -390,7 +390,7 @@ const Register = () => {
                 <span>Registering...</span>
               </div>
             ) : (
-              'Register'
+              'Signup'
             )}
           </button>
 
