@@ -106,11 +106,6 @@ const Register = () => {
       newErrors.phone = 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)';
     }
 
-    // Emergency contact validation
-    if (formData.emergencyContact && !validateSriLankanPhone(formData.emergencyContact)) {
-      newErrors.emergencyContact = 'Please enter a valid Sri Lankan phone number';
-    }
-
     // Date of birth validation
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required';
@@ -142,6 +137,28 @@ const Register = () => {
       }
       if (!formData.licenseNumber.trim()) {
         newErrors.licenseNumber = 'Medical license number is required for doctors';
+      }
+    }
+
+    // Patient-specific validations - NEW REQUIRED FIELDS
+    if (formData.role === 'patient') {
+      // Blood Group validation - NOW REQUIRED
+      if (!formData.bloodGroup) {
+        newErrors.bloodGroup = 'Blood group is required';
+      }
+
+      // Address validation - NOW REQUIRED
+      if (!formData.address.trim()) {
+        newErrors.address = 'Address is required';
+      } else if (formData.address.trim().length < 10) {
+        newErrors.address = 'Please enter a complete address (minimum 10 characters)';
+      }
+
+      // Emergency Contact validation - NOW REQUIRED
+      if (!formData.emergencyContact.trim()) {
+        newErrors.emergencyContact = 'Emergency contact number is required';
+      } else if (!validateSriLankanPhone(formData.emergencyContact)) {
+        newErrors.emergencyContact = 'Please enter a valid Sri Lankan phone number';
       }
     }
 
@@ -217,6 +234,7 @@ const Register = () => {
               </h3>
   
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
               {/* Patient Role */}
               <button
                 type="button"
@@ -364,7 +382,7 @@ const Register = () => {
               </p>
             )}
           </div>
-          
+
           {/* Doctor-Specific Fields */}
           {formData.role === 'doctor' && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
@@ -682,56 +700,72 @@ const Register = () => {
                 )}
               </div>
 
-              {/* Blood Group - Only for Patients */}
+              {/* Blood Group - NOW REQUIRED for Patients */}
               {formData.role === 'patient' && (
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Blood Group <span className="text-gray-400">(Optional)</span>
+                    Blood Group <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="bloodGroup"
                     value={formData.bloodGroup}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none"
-                  >
-                    <option value="">Select Blood Group</option>
-                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
-                      <option key={group} value={group}>{group}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none ${
+                      errors.bloodGroup ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
+                  }`}
+                >
+                  <option value="">Select Blood Group</option>
+                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
+                    <option key={group} value={group}>{group}</option>
+                  ))}
+                </select>
+                {errors.bloodGroup && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                    <AlertCircle size={14} />
+                    <span>{errors.bloodGroup}</span>
+                  </p>
+                )}
+              </div>
+            )}
 
-          {/* Additional Information - Only for Patients */}
-          {formData.role === 'patient' && (
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2 border-b-2 border-primary-500 pb-2">
-                <MapPin className="text-primary-500" size={20} />
-                <span>Additional Information</span>
-              </h3>
-              
-              <div className="space-y-4">
-                {/* Address */}
+            {/* Additional Information - NOW REQUIRED for Patients */}
+            {formData.role === 'patient' && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2 border-b-2 border-primary-500 pb-2">
+                  <MapPin className="text-primary-500" size={20} />
+                  <span>Additional Information <span className="text-red-500">*</span></span>
+                </h3>
+    
+                <div className="space-y-4">
+
+                  {/* Address - NOW REQUIRED */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      rows="3"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none resize-none ${
+                        errors.address ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
+                      }`}
+                      placeholder="Enter your full address (Street, City, Province)"
+                    ></textarea>
+                    <p className="mt-1 text-xs text-gray-500">Minimum 10 characters required</p>
+                    {errors.address && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                      <AlertCircle size={14} />
+                      <span>{errors.address}</span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Emergency Contact - NOW REQUIRED */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Address <span className="text-gray-400">(Optional)</span>
-                  </label>
-                  <textarea
-                    name="address"
-                    value={formData.address}
-                    onChange={handleChange}
-                    rows="2"
-                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none resize-none"
-                    placeholder="Enter your full address (Street, City, Province)"
-                  ></textarea>
-                </div>
-
-                {/* Emergency Contact */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Emergency Contact Number <span className="text-gray-400">(Optional)</span>
+                    Emergency Contact Number <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -749,6 +783,7 @@ const Register = () => {
                       placeholder="0771234567"
                     />
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">Format: 07XXXXXXXX (10 digits)</p>
                   {errors.emergencyContact && (
                     <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
                       <AlertCircle size={14} />
@@ -805,7 +840,7 @@ const Register = () => {
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
