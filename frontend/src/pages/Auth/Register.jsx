@@ -140,7 +140,7 @@ const Register = () => {
       }
     }
 
-    // Patient-specific validations - NEW REQUIRED FIELDS
+    // Patient-specific validations - REQUIRED FIELDS
     if (formData.role === 'patient') {
       // Blood Group validation - NOW REQUIRED
       if (!formData.bloodGroup) {
@@ -185,11 +185,44 @@ const Register = () => {
         delete dataToSend.licenseNumber;
       }
       
+      // Call register from AuthContext
       await register(dataToSend);
-      toast.success(`🎉 ${formData.role === 'doctor' ? 'Doctor' : formData.role === 'admin' ? 'Admin' : 'Patient'} account created successfully! Please login to continue.`);
-      navigate('/login');
+      
+      // SUCCESS - Show success toast
+      toast.success(
+        'Account created successfully! Please login to continue.',
+        { autoClose: 3000 }
+      );
+      
+      // Wait a moment for toast to show, then navigate after 1.5 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+      
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+      // ERROR HANDLING - Show specific error messages
+      console.error('Registration error:', error);
+      
+      if (error.response) {
+        // Backend responded with error
+        const errorMessage = error.response.data.message || 'Registration failed';
+        toast.error(errorMessage);
+        
+        // Handle specific error codes
+        if (error.response.status === 400) {
+          toast.error('Invalid data provided. Please check your inputs.');
+        } else if (error.response.status === 409) {
+          toast.error('Email already exists. Please use a different email.');
+        } else if (error.response.status === 500) {
+          toast.error('Server error. Please try again later.');
+        }
+      } else if (error.request) {
+        // Request made but no response (backend not running)
+        toast.error('Cannot connect to server. Please ensure the backend is running.');
+      } else {
+        // Something else went wrong
+        toast.error('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -227,32 +260,28 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Role Selection - FIRST */}
-            <div className="bg-gradient-to-br from-primary-50 to-purple-50 rounded-xl p-6 border-2 border-primary-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <Shield className="text-primary-500" size={20} />
-                <span>Select Your Role <span className="text-red-500">*</span></span>
-              </h3>
-  
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-gradient-to-br from-primary-50 to-purple-50 rounded-xl p-6 border-2 border-primary-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+              <Shield className="text-primary-500" size={20} />
+              <span>Select Your Role <span className="text-red-500">*</span></span>
+            </h3>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Patient Role */}
               <button
                 type="button"
                 onClick={() => setFormData({ 
                   ...formData, 
                   role: formData.role === 'patient' ? '' : 'patient',
-                  // Clear doctor-specific fields when switching from doctor
                   specialization: formData.role === 'doctor' ? '' : formData.specialization,
                   licenseNumber: formData.role === 'doctor' ? '' : formData.licenseNumber
                 })}
-
                 className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
                   formData.role === 'patient'
                     ? 'border-primary-500 bg-white shadow-lg ring-2 ring-primary-200'
                     : 'border-gray-300 hover:border-primary-300 bg-white'
                 }`}
               >
-
                 <div className="text-center">
                   <div className="text-4xl mb-2">{getRoleIcon('patient')}</div>
                   <h4 className="font-bold text-gray-900 mb-1">Patient</h4>
@@ -275,18 +304,15 @@ const Register = () => {
                 onClick={() => setFormData({ 
                   ...formData, 
                   role: formData.role === 'doctor' ? '' : 'doctor',
-                  // Clear doctor-specific fields if deselecting
                   specialization: formData.role === 'doctor' ? '' : formData.specialization,
                   licenseNumber: formData.role === 'doctor' ? '' : formData.licenseNumber
                 })}
-
                 className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
                   formData.role === 'doctor'
                     ? 'border-blue-500 bg-white shadow-lg ring-2 ring-blue-200'
                     : 'border-gray-300 hover:border-blue-300 bg-white'
                 }`}
               >
-
                 <div className="text-center">
                   <div className="text-4xl mb-2">{getRoleIcon('doctor')}</div>
                   <h4 className="font-bold text-gray-900 mb-1">Doctor</h4>
@@ -309,18 +335,15 @@ const Register = () => {
                 onClick={() => setFormData({ 
                   ...formData, 
                   role: formData.role === 'admin' ? '' : 'admin',
-                  // Clear doctor-specific fields when switching from doctor
                   specialization: formData.role === 'doctor' ? '' : formData.specialization,
                   licenseNumber: formData.role === 'doctor' ? '' : formData.licenseNumber
                 })}
-
                 className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
                   formData.role === 'admin'
                     ? 'border-red-500 bg-white shadow-lg ring-2 ring-red-200'
                     : 'border-gray-300 hover:border-red-300 bg-white'
                 }`}
               >
-
                 <div className="text-center">
                   <div className="text-4xl mb-2">{getRoleIcon('admin')}</div>
                   <h4 className="font-bold text-gray-900 mb-1">Admin</h4>
@@ -382,7 +405,7 @@ const Register = () => {
               </p>
             )}
           </div>
-
+          
           {/* Doctor-Specific Fields */}
           {formData.role === 'doctor' && (
             <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
@@ -712,49 +735,50 @@ const Register = () => {
                     onChange={handleChange}
                     className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none ${
                       errors.bloodGroup ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
-                  }`}
-                >
-                  <option value="">Select Blood Group</option>
-                  {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
-                    <option key={group} value={group}>{group}</option>
-                  ))}
-                </select>
-                {errors.bloodGroup && (
-                  <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
-                    <AlertCircle size={14} />
-                    <span>{errors.bloodGroup}</span>
-                  </p>
-                )}
-              </div>
-            )}
+                    }`}
+                  >
+                    <option value="">Select Blood Group</option>
+                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(group => (
+                      <option key={group} value={group}>{group}</option>
+                    ))}
+                  </select>
+                  {errors.bloodGroup && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
+                      <AlertCircle size={14} />
+                      <span>{errors.bloodGroup}</span>
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
 
-            {/* Additional Information - NOW REQUIRED for Patients */}
-            {formData.role === 'patient' && (
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2 border-b-2 border-primary-500 pb-2">
-                  <MapPin className="text-primary-500" size={20} />
-                  <span>Additional Information <span className="text-red-500">*</span></span>
-                </h3>
-    
-                <div className="space-y-4">
-
-                  {/* Address - NOW REQUIRED */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Address <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      rows="3"
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none resize-none ${
-                        errors.address ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
-                      }`}
-                      placeholder="Enter your full address (Street, City, Province)"
-                    ></textarea>
-                    <p className="mt-1 text-xs text-gray-500">Minimum 10 characters required</p>
-                    {errors.address && (
+          {/* Additional Information - NOW REQUIRED for Patients */}
+          {formData.role === 'patient' && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2 border-b-2 border-primary-500 pb-2">
+                <MapPin className="text-primary-500" size={20} />
+                <span>Additional Information <span className="text-red-500">*</span></span>
+              </h3>
+              
+              <div className="space-y-4">
+                {/* Address - NOW REQUIRED */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Address <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    rows="3"
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:ring-2 focus:ring-primary-200 transition-all duration-300 outline-none resize-none ${
+                      errors.address ? 'border-red-500' : 'border-gray-300 focus:border-primary-500'
+                    }`}
+                    placeholder="Enter your full address (Street, City, Province)"
+                  ></textarea>
+                  <p className="mt-1 text-xs text-gray-500">Minimum 10 characters required</p>
+                  {errors.address && (
                     <p className="mt-1 text-sm text-red-600 flex items-center space-x-1">
                       <AlertCircle size={14} />
                       <span>{errors.address}</span>
@@ -823,7 +847,7 @@ const Register = () => {
             ) : (
               <>
                 <UserPlus size={24} />
-                <span>Sign Up as {formData.role === 'patient' ? 'Patient' : formData.role === 'doctor' ? 'Doctor' : 'Admin'}</span>
+                <span>Sign Up as {formData.role === 'patient' ? 'Patient' : formData.role === 'doctor' ? 'Doctor' : formData.role === 'admin' ? 'Admin' : 'User'}</span>
               </>
             )}
           </button>
@@ -840,7 +864,7 @@ const Register = () => {
               </Link>
             </p>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

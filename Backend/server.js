@@ -1,22 +1,30 @@
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
 const connectDB = require('./config/db');
 const express = require('express');
+const cors = require('cors');
 const app = express();
 
 // Connect to MongoDB
 connectDB();
 
-// Middleware (body parser, etc.)
+// Middleware
+app.use(cors({
+   origin: 'http://localhost:5173', // Your frontend URL
+   credentials: true,
+   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+   allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Example route
 app.get('/', (req, res) => {
-	res.send('MediTrack API is running');
+   res.send('MediTrack API is running');
 });
 
 const PORT = process.env.PORT || 5000;
 
 // Routes setup
+app.use('/api/auth', require('./Routes/AuthRoute'));
 app.use('/api/users', require('./Routes/UserRoute'));
 app.use('/api/medical', require('./Routes/MedicalHistoryRoute'));
 app.use('/api/doctor', require('./Routes/DoctorFdbackRoute'));
@@ -32,4 +40,8 @@ app.use('/api/auditlogs', require('./Routes/AuditLogRoute'));
 app.use('/api/access', require('./Routes/AccessRoute'));
 
 // Start the server
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+app.listen(PORT, () => {
+   console.log(`Server started on port ${PORT}`);
+   console.log('Connected Successfully ✅');
+   console.log(`API available at http://localhost:${PORT}/api`);
+});
