@@ -33,21 +33,15 @@ export default function AuthProvider({ children }) {
     }
   }, []);
 
-  // Register function - THIS WAS MISSING
+  // Register function
   const register = async (userData) => {
     try {
+      console.log('📝 Attempting registration to:', `${API_URL}/auth/register`);
       const response = await axios.post(`${API_URL}/auth/register`, userData);
-      
-      // Optionally auto-login after registration
-      // Uncomment below if you want users logged in immediately after registration
-      /*
-      const { token, user } = response.data;
-      localStorage.setItem('token', token);
-      setUser(user);
-      */
-      
+      console.log('✅ Registration successful:', response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ Registration error:', error);
       throw error;
     }
   };
@@ -55,6 +49,7 @@ export default function AuthProvider({ children }) {
   // Login function
   const login = async (credentials) => {
     try {
+      console.log('🔐 Attempting login to:', `${API_URL}/auth/login`);
       const response = await axios.post(`${API_URL}/auth/login`, credentials);
       
       const { token, user } = response.data;
@@ -65,8 +60,10 @@ export default function AuthProvider({ children }) {
       // Set user state
       setUser(user);
       
+      console.log('✅ Login successful');
       return user;
     } catch (error) {
+      console.error('❌ Login error:', error);
       throw error;
     }
   };
