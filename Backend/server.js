@@ -43,5 +43,4 @@ app.use('/api/access', require('./Routes/AccessRoute'));
 app.listen(PORT, () => {
    console.log(`Server started on port ${PORT}`);
    console.log('Connected Successfully ✅');
-   console.log(`API available at http://localhost:${PORT}/api`);
 });

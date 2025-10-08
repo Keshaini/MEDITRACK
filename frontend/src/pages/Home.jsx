@@ -9,7 +9,13 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary-500 to-secondary-500 text-white py-20">
+      <section
+        className="relative text-white py-20 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(14,165,233,0.85), rgba(2,132,199,0.85)), url('/assets/health.jpg')`,
+        }}  
+      >
+
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
