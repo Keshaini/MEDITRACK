@@ -258,7 +258,7 @@ const AddHealthLog = () => {
                 </div>
                 <span>Add Health Log</span>
               </h1>
-              <p className="text-gray-600 mt-2">Record your daily vital signs (HL001)</p>
+              <p className="text-gray-600 mt-2">Record your daily vital signs</p>
             </div>
             <button
               onClick={() => navigate('/patient/dashboard')}

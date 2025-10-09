@@ -82,7 +82,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-
+            */}
             <Route
               path="/patient/add-health-log"
               element={
@@ -91,7 +91,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-
+            {/*
             <Route
               path="/patient/edit-health-log/:id"
               element={

@@ -194,10 +194,10 @@ const Register = () => {
         { autoClose: 3000 }
       );
       
-      // Wait a moment for toast to show, then navigate after 1.5 seconds
+      // Wait a moment for toast to show, then navigate after 1.0 seconds
       setTimeout(() => {
         navigate('/login');
-      }, 1500);
+      }, 1000);
       
     } catch (error) {
       // ERROR HANDLING - Show specific error messages

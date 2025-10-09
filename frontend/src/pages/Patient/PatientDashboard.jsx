@@ -62,7 +62,7 @@ const PatientDashboard = () => {
           totalHealthLogs: healthLogsRes.data?.length || 0,
           totalMedicalRecords: medicalHistoryRes.data?.length || 0,
           assignedDoctor: doctorRes.data,
-          pendingAlerts: 0 // Will be implemented in Sprint 2
+          pendingAlerts: 0 // Placeholder, implement alert fetching logic if needed
         },
         recentHealthLogs: healthLogsRes.data?.slice(0, 5) || [],
         recentMedicalHistory: medicalHistoryRes.data?.slice(0, 3) || []
