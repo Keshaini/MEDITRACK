@@ -1,4 +1,3 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -16,24 +15,33 @@ import TermsOfService from "./pages/Auth/TermsOfService";
 import PrivacyPolicy from "./pages/Auth/PrivacyPolicy";
 
 // Patient Pages
-//import PatientDashboard from "./pages/patient/PatientDashboard";
-// Import these as you create them:
-//import HealthLogList from "./pages/patient/HealthLogs";
-//import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
-//import EditHealthLog from "./components/patient/healthlog/EditHealthLog";
-//import ViewMedicalHistory from "./pages/patient/MedicalHistory";
-//import AddMedicalHistory from "./components/patient/medicalhistory/AddMedicalHistory";
-//import MyDoctors from "./pages/patient/MyDoctors";
-//import PatientProfile from "./pages/patient/Profile";
+import PatientDashboard from "./pages/patient/PatientDashboard";
 
 // Doctor Pages
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
-import MyPatients from "./pages/doctor/MyPatients";
 
 // Admin Pages
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import Users from "./pages/admin/Users";
-import Assignments from "./pages/admin/Assignments";
+// import AdminDashboard from "./pages/admin/AdminDashboard";
+
+// Uncomment these as you create them:
+// Patient Components
+// import HealthLogList from "./pages/patient/HealthLogs";
+// import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
+// import EditHealthLog from "./components/patient/healthlog/EditHealthLog";
+// import ViewMedicalHistory from "./pages/patient/MedicalHistory";
+// import AddMedicalHistory from "./components/patient/medicalhistory/AddMedicalHistory";
+// import MyDoctors from "./pages/patient/MyDoctors";
+// import PatientProfile from "./pages/patient/Profile";
+
+// Doctor Components
+// import PatientList from "./pages/doctor/PatientList";
+// import PatientDetails from "./pages/doctor/PatientDetails";
+// import ProvideFeedback from "./pages/doctor/ProvideFeedback";
+// import FeedbackHistory from "./pages/doctor/FeedbackHistory";
+
+// Admin Components
+// import Users from "./pages/admin/Users";
+// import Assignments from "./pages/admin/Assignments";
 
 export default function App() {
   return (
@@ -65,6 +73,7 @@ export default function App() {
             />
 
             {/* Uncomment as you create these pages: */}
+            {/*
             <Route
               path="/patient/health-logs"
               element={
@@ -127,7 +136,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-            
+            */}
 
             {/* ============================================ */}
             {/* DOCTOR ROUTES (Protected) - Sprint 2 */}
@@ -141,19 +150,58 @@ export default function App() {
               }
             />
 
+            {/* Uncomment as you create these pages: */}
+            {/*
             <Route
               path="/doctor/patients"
               element={
                 <PrivateRoute allowedRoles={['doctor']}>
-                  <MyPatients />
+                  <PatientList />
                 </PrivateRoute>
               }
             />
-            
+
+            <Route
+              path="/doctor/patient/:id"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <PatientDetails />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/doctor/provide-feedback"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <ProvideFeedback />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/doctor/feedback-history"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <FeedbackHistory />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/doctor/profile"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <DoctorProfile />
+                </PrivateRoute>
+              }
+            />
+            */}
 
             {/* ============================================ */}
             {/* ADMIN ROUTES (Protected) */}
             {/* ============================================ */}
+            {/*
             <Route
               path="/admin/dashboard"
               element={
@@ -180,7 +228,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-            
+            */}
 
             {/* ============================================ */}
             {/* 404 NOT FOUND */}
@@ -223,3 +271,4 @@ export default function App() {
       />
     </Router>
   );
+}

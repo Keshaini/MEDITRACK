@@ -1,4 +1,3 @@
-// src/pages/doctor/DoctorDashboard.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
