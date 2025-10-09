@@ -1,48 +1,214 @@
-// filepath: src/App.jsx
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Common Components
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
+import PrivateRoute from "./components/common/PrivateRoute";
+
+// Public Pages
 import Home from "./pages/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import TermsOfService from "./pages/Auth/TermsOfService";
 import PrivacyPolicy from "./pages/Auth/PrivacyPolicy";
-import TermsOfService from "./pages/Auth/PrivacyPolicy";
-import PrivateRoute from "./components/common/PrivateRoute";
+
+// Patient Pages
+//import PatientDashboard from "./pages/patient/PatientDashboard";
+// Import these as you create them:
+//import HealthLogList from "./pages/patient/HealthLogs";
+//import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
+//import EditHealthLog from "./components/patient/healthlog/EditHealthLog";
+//import ViewMedicalHistory from "./pages/patient/MedicalHistory";
+//import AddMedicalHistory from "./components/patient/medicalhistory/AddMedicalHistory";
+//import MyDoctors from "./pages/patient/MyDoctors";
+//import PatientProfile from "./pages/patient/Profile";
+
+// Doctor Pages
+import DoctorDashboard from "./pages/doctor/DoctorDashboard";
+import MyPatients from "./pages/doctor/MyPatients";
+
+// Admin Pages
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import Users from "./pages/admin/Users";
+import Assignments from "./pages/admin/Assignments";
 
 export default function App() {
   return (
     <Router>
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        
+        <main className="flex-grow">
+          <Routes>
+            {/* ============================================ */}
+            {/* PUBLIC ROUTES */}
+            {/* ============================================ */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
 
-         
-        {/* Terms & Privacy Routes - NEW */}
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
+            {/* ============================================ */}
+            {/* PATIENT ROUTES (Protected) */}
+            {/* ============================================ */}
+            <Route
+              path="/patient/dashboard"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <PatientDashboard />
+                </PrivateRoute>
+              }
+            />
 
-        {/* Protected Routes*/}
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <h1 className="text-3xl text-center mt-10">Protected Dashboard</h1>
-            </PrivateRoute>
-          }
-        />
+            {/* Uncomment as you create these pages: */}
+            <Route
+              path="/patient/health-logs"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <HealthLogList />
+                </PrivateRoute>
+              }
+            />
 
-        <Route
-          path="*"
-          element={<h1 className="text-center mt-10">404 Not Found</h1>}
-        />
-      </Routes>
-      <Footer />
+            <Route
+              path="/patient/add-health-log"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <AddHealthLog />
+                </PrivateRoute>
+              }
+            />
 
-      {/* ToastContainer */}
+            <Route
+              path="/patient/edit-health-log/:id"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <EditHealthLog />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/patient/medical-history"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <ViewMedicalHistory />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/patient/add-medical-history"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <AddMedicalHistory />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/patient/my-doctors"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <MyDoctors />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/patient/profile"
+              element={
+                <PrivateRoute allowedRoles={['patient']}>
+                  <PatientProfile />
+                </PrivateRoute>
+              }
+            />
+            
+
+            {/* ============================================ */}
+            {/* DOCTOR ROUTES (Protected) - Sprint 2 */}
+            {/* ============================================ */}
+            <Route
+              path="/doctor/dashboard"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <DoctorDashboard />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/doctor/patients"
+              element={
+                <PrivateRoute allowedRoles={['doctor']}>
+                  <MyPatients />
+                </PrivateRoute>
+              }
+            />
+            
+
+            {/* ============================================ */}
+            {/* ADMIN ROUTES (Protected) */}
+            {/* ============================================ */}
+            <Route
+              path="/admin/dashboard"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <AdminDashboard />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/admin/users"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <Users />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/admin/assignments"
+              element={
+                <PrivateRoute allowedRoles={['admin']}>
+                  <Assignments />
+                </PrivateRoute>
+              }
+            />
+            
+
+            {/* ============================================ */}
+            {/* 404 NOT FOUND */}
+            {/* ============================================ */}
+            <Route
+              path="*"
+              element={
+                <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                  <div className="text-center">
+                    <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+                    <p className="text-xl text-gray-600 mb-8">Page Not Found</p>
+                    <a
+                      href="/"
+                      className="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+                    >
+                      Go Home
+                    </a>
+                  </div>
+                </div>
+              }
+            />
+          </Routes>
+        </main>
+
+        <Footer />
+      </div>
+
+      {/* Toast Notifications Container */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -57,4 +223,3 @@ export default function App() {
       />
     </Router>
   );
-}
