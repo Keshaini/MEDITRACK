@@ -21,12 +21,12 @@ import PatientDashboard from "./pages/patient/PatientDashboard";
 import DoctorDashboard from "./pages/doctor/DoctorDashboard";
 
 // Admin Pages
-// import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Uncomment these as you create them:
 // Patient Components
 // import HealthLogList from "./pages/patient/HealthLogs";
-// import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
+import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
 // import EditHealthLog from "./components/patient/healthlog/EditHealthLog";
 // import ViewMedicalHistory from "./pages/patient/MedicalHistory";
 // import AddMedicalHistory from "./components/patient/medicalhistory/AddMedicalHistory";
