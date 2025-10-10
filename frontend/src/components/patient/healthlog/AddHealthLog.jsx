@@ -1,6 +1,8 @@
+// AddHealthLog.jsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { createHealthLog } from '../../services/healthLogService';
 import {
   Activity,
   Heart,
@@ -15,7 +17,6 @@ import {
   AlertCircle,
   TrendingUp
 } from 'lucide-react';
-import axios from 'axios';
 
 const AddHealthLog = () => {
   const navigate = useNavigate();
@@ -35,30 +36,18 @@ const AddHealthLog = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
   };
 
+  // Form validation
   const validateForm = () => {
     const newErrors = {};
 
-    // Date validation
-    if (!formData.date) {
-      newErrors.date = 'Date is required';
-    }
+    if (!formData.date) newErrors.date = 'Date is required';
 
     // Blood Pressure validation
     if (formData.bloodPressureSystolic || formData.bloodPressureDiastolic) {
@@ -76,48 +65,38 @@ const AddHealthLog = () => {
       }
     }
 
-    // Heart Rate validation
+    // Heart Rate
     if (formData.heartRate) {
       const hr = parseInt(formData.heartRate);
-      if (hr < 40 || hr > 200) {
-        newErrors.heartRate = 'Heart rate should be between 40-200 bpm';
-      }
+      if (hr < 40 || hr > 200) newErrors.heartRate = 'Heart rate should be between 40-200 bpm';
     }
 
-    // Temperature validation
+    // Temperature
     if (formData.temperature) {
       const temp = parseFloat(formData.temperature);
-      if (temp < 95 || temp > 106) {
-        newErrors.temperature = 'Temperature should be between 95-106°F';
-      }
+      if (temp < 95 || temp > 106) newErrors.temperature = 'Temperature should be between 95-106°F';
     }
 
-    // Weight validation
+    // Weight
     if (formData.weight) {
       const weight = parseFloat(formData.weight);
-      if (weight < 20 || weight > 300) {
-        newErrors.weight = 'Weight should be between 20-300 kg';
-      }
+      if (weight < 20 || weight > 300) newErrors.weight = 'Weight should be between 20-300 kg';
     }
 
-    // Blood Sugar validation
+    // Blood Sugar
     if (formData.bloodSugar) {
       const sugar = parseInt(formData.bloodSugar);
-      if (sugar < 50 || sugar > 400) {
-        newErrors.bloodSugar = 'Blood sugar should be between 50-400 mg/dL';
-      }
+      if (sugar < 50 || sugar > 400) newErrors.bloodSugar = 'Blood sugar should be between 50-400 mg/dL';
     }
 
-    // Oxygen Saturation validation
+    // Oxygen Saturation
     if (formData.oxygenSaturation) {
       const oxygen = parseInt(formData.oxygenSaturation);
-      if (oxygen < 70 || oxygen > 100) {
-        newErrors.oxygenSaturation = 'Oxygen saturation should be between 70-100%';
-      }
+      if (oxygen < 70 || oxygen > 100) newErrors.oxygenSaturation = 'Oxygen saturation should be between 70-100%';
     }
 
-    // At least one vital sign required
-    if (!formData.bloodPressureSystolic && !formData.heartRate && !formData.temperature && 
+    // At least one vital
+    if (!formData.bloodPressureSystolic && !formData.heartRate && !formData.temperature &&
         !formData.weight && !formData.bloodSugar && !formData.oxygenSaturation) {
       newErrors.general = 'Please enter at least one vital sign measurement';
     }
@@ -126,72 +105,53 @@ const AddHealthLog = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Generate warning messages for abnormal vitals
   const getVitalStatus = () => {
     const warnings = [];
-    
-    // Check Blood Pressure
+
     if (formData.bloodPressureSystolic && formData.bloodPressureDiastolic) {
-      const systolic = parseInt(formData.bloodPressureSystolic);
-      const diastolic = parseInt(formData.bloodPressureDiastolic);
-      
-      if (systolic >= 140 || diastolic >= 90) {
-        warnings.push('High blood pressure detected');
-      } else if (systolic < 90 || diastolic < 60) {
-        warnings.push('Low blood pressure detected');
-      }
+      const sys = parseInt(formData.bloodPressureSystolic);
+      const dia = parseInt(formData.bloodPressureDiastolic);
+      if (sys >= 140 || dia >= 90) warnings.push('High blood pressure detected');
+      else if (sys < 90 || dia < 60) warnings.push('Low blood pressure detected');
     }
 
-    // Check Heart Rate
     if (formData.heartRate) {
       const hr = parseInt(formData.heartRate);
-      if (hr > 100) {
-        warnings.push('Elevated heart rate');
-      } else if (hr < 60) {
-        warnings.push('Low heart rate');
-      }
+      if (hr > 100) warnings.push('Elevated heart rate');
+      else if (hr < 60) warnings.push('Low heart rate');
     }
 
-    // Check Temperature
     if (formData.temperature) {
       const temp = parseFloat(formData.temperature);
-      if (temp >= 100.4) {
-        warnings.push('Fever detected');
-      } else if (temp < 97) {
-        warnings.push('Low body temperature');
-      }
+      if (temp >= 100.4) warnings.push('Fever detected');
+      else if (temp < 97) warnings.push('Low body temperature');
     }
 
-    // Check Oxygen Saturation
     if (formData.oxygenSaturation) {
       const oxygen = parseInt(formData.oxygenSaturation);
-      if (oxygen < 95) {
-        warnings.push('Low oxygen saturation');
-      }
+      if (oxygen < 95) warnings.push('Low oxygen saturation');
     }
 
     return warnings;
   };
 
+  // Submit handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
       toast.error('Please fix the errors in the form');
       return;
     }
 
     setLoading(true);
-
     try {
       const token = localStorage.getItem('token');
-
-      // Prepare data for backend
       const healthLogData = {
         date: formData.date,
         time: formData.time,
-        bloodPressure: formData.bloodPressureSystolic && formData.bloodPressureDiastolic 
-          ? `${formData.bloodPressureSystolic}/${formData.bloodPressureDiastolic}`
-          : null,
+        bloodPressure: formData.bloodPressureSystolic && formData.bloodPressureDiastolic
+          ? `${formData.bloodPressureSystolic}/${formData.bloodPressureDiastolic}` : null,
         heartRate: formData.heartRate ? parseInt(formData.heartRate) : null,
         temperature: formData.temperature ? parseFloat(formData.temperature) : null,
         weight: formData.weight ? parseFloat(formData.weight) : null,
@@ -201,39 +161,21 @@ const AddHealthLog = () => {
         notes: formData.notes || ''
       };
 
-      const response = await axios.post(`${API_URL}/healthlogs`, healthLogData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await createHealthLog(healthLogData, token);
+      console.log('✅ Health log created:', response);
 
-      console.log('✅ Health log created:', response.data);
-
-      // Check for warnings
       const warnings = getVitalStatus();
       if (warnings.length > 0) {
-        toast.warning(`Health log saved! Warnings: ${warnings.join(', ')}`, {
-          autoClose: 5000
-        });
+        toast.warning(`Health log saved! Warnings: ${warnings.join(', ')}`, { autoClose: 5000 });
       } else {
-        toast.success('✅ Health log saved successfully!', {
-          autoClose: 2000
-        });
+        toast.success('✅ Health log saved successfully!', { autoClose: 2000 });
       }
 
-      // Navigate back to health logs list after a short delay
-      setTimeout(() => {
-        navigate('/patient/health-logs');
-      }, 1500);
+      setTimeout(() => navigate('/patient/health-logs'), 1500);
 
     } catch (error) {
       console.error('❌ Error creating health log:', error);
-      
-      if (error.response) {
-        toast.error(error.response.data.message || 'Failed to save health log');
-      } else if (error.request) {
-        toast.error('Cannot connect to server. Please check your connection.');
-      } else {
-        toast.error('An unexpected error occurred. Please try again.');
-      }
+      toast.error(error.message || 'Failed to save health log');
     } finally {
       setLoading(false);
     }
@@ -249,37 +191,25 @@ const AddHealthLog = () => {
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                  <Activity className="text-white" size={24} />
-                </div>
-                <span>Add Health Log</span>
-              </h1>
-              <p className="text-gray-600 mt-2">Record your daily vital signs</p>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
+              <Activity className="text-white" size={24} />
             </div>
-            <button
-              onClick={() => navigate('/patient/dashboard')}
-              className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <X size={24} />
-            </button>
-          </div>
+            <span>Add Health Log</span>
+          </h1>
+          <button onClick={() => navigate('/patient/dashboard')} className="text-gray-600 hover:text-gray-900">
+            <X size={24} />
+          </button>
         </div>
 
-        {/* General Error Message */}
         {errors.general && (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg">
-            <div className="flex items-center space-x-2">
-              <AlertCircle className="text-red-600" size={20} />
-              <p className="text-red-700 font-medium">{errors.general}</p>
-            </div>
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-lg flex items-center space-x-2">
+            <AlertCircle className="text-red-600" size={20} />
+            <p className="text-red-700 font-medium">{errors.general}</p>
           </div>
         )}
 
-        {/* Warning Messages */}
         {getVitalStatus().length > 0 && (
           <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 rounded-lg">
             <div className="flex items-start space-x-2">
@@ -287,18 +217,14 @@ const AddHealthLog = () => {
               <div>
                 <p className="text-yellow-800 font-semibold mb-2">⚠️ Vital Signs Alert</p>
                 <ul className="list-disc list-inside text-yellow-700 space-y-1">
-                  {getVitalStatus().map((warning, index) => (
-                    <li key={index}>{warning}</li>
-                  ))}
+                  {getVitalStatus().map((w, i) => <li key={i}>{w}</li>)}
                 </ul>
-                <p className="text-yellow-700 text-sm mt-2">
-                  Your doctor will be notified of these readings.
-                </p>
+                <p className="text-yellow-700 text-sm mt-2">Your doctor will be notified of these readings.</p>
               </div>
             </div>
           </div>
         )}
-
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date & Time Section */}
           <div className="bg-white rounded-xl shadow-md p-6">
