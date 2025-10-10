@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createHealthLog } from '../../services/healthLogService';
+import { createHealthLog } from "../../../services/healthLogService";
 import {
   Activity,
   Heart,
@@ -224,7 +224,7 @@ const AddHealthLog = () => {
             </div>
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Date & Time Section */}
           <div className="bg-white rounded-xl shadow-md p-6">

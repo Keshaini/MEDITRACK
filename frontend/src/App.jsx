@@ -25,7 +25,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 
 // Uncomment these as you create them:
 // Patient Components
-// import HealthLogList from "./pages/patient/HealthLogs";
+import HealthLogList from "./pages/patient/HealthLogs";
 import AddHealthLog from "./components/patient/healthlog/AddHealthLog";
 // import EditHealthLog from "./components/patient/healthlog/EditHealthLog";
 // import ViewMedicalHistory from "./pages/patient/MedicalHistory";
@@ -73,7 +73,7 @@ export default function App() {
             />
 
             {/* Uncomment as you create these pages: */}
-            {/*
+            
             <Route
               path="/patient/health-logs"
               element={
@@ -82,7 +82,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-            */}
+            
             <Route
               path="/patient/add-health-log"
               element={
@@ -91,7 +91,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-            {/*
+            
             <Route
               path="/patient/edit-health-log/:id"
               element={
@@ -118,7 +118,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-
+            {/*
             <Route
               path="/patient/my-doctors"
               element={
@@ -139,7 +139,7 @@ export default function App() {
             */}
 
             {/* ============================================ */}
-            {/* DOCTOR ROUTES (Protected) - Sprint 2 */}
+            {/*   DOCTOR ROUTES (Protected)   */}
             {/* ============================================ */}
             <Route
               path="/doctor/dashboard"
@@ -201,7 +201,7 @@ export default function App() {
             {/* ============================================ */}
             {/* ADMIN ROUTES (Protected) */}
             {/* ============================================ */}
-            {/*
+          
             <Route
               path="/admin/dashboard"
               element={
@@ -210,7 +210,7 @@ export default function App() {
                 </PrivateRoute>
               }
             />
-
+            {/*
             <Route
               path="/admin/users"
               element={

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import { Bell, Menu, X, LogOut, User, Home, Activity, FileText, Users, Shield } from 'lucide-react';
-import NotificationBell from "../../pages/Notifications/NotificationBell";
+import NotificationBell from "../notifications/NotificationBell";
 
 const Navbar = () => {
   const navigate = useNavigate();
