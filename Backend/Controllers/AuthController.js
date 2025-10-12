@@ -1,108 +1,132 @@
-// backend/Controllers/AuthController.js
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../Models/User");
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// 🔹 REGISTER USER (Common for Patient, Doctor, Admin)
 exports.register = async (req, res) => {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
-      dateOfBirth,
-      gender,
-      address,
-      bloodGroup,
-      emergencyContact,
-      role,
-      specialization,
-      licenseNumber,
-    } = req.body;
+    const { name, email, password, phone, dateOfBirth, role } = req.body;
 
-    // 1️⃣ Check if email already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "Email already registered" });
+    console.log('📝 Registration attempt for:', email);
 
-    // 2️⃣ Validate required fields based on role
-    if (!firstName || !lastName || !email || !password)
-      return res.status(400).json({ message: "Missing required fields" });
+    // Check if user exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Email already exists' 
+      });
+    }
 
-    if (role === "doctor" && (!specialization || !licenseNumber))
-      return res
-        .status(400)
-        .json({ message: "Doctor specialization and license are required" });
-
-    if (role === "patient" && (!address || !bloodGroup || !emergencyContact))
-      return res
-        .status(400)
-        .json({ message: "Patient address, blood group, and emergency contact are required" });
-
-    // 3️⃣ Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // 4️⃣ Create user
+    // Create new user (password will be hashed by pre-save hook)
     const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
+      name,
+      email: email.toLowerCase(),
+      password, // Will be hashed by schema pre-save hook
       phone,
       dateOfBirth,
-      gender,
-      address,
-      bloodGroup,
-      emergencyContact,
-      role: role || "patient",
-      specialization: role === "doctor" ? specialization : undefined,
-      licenseNumber: role === "doctor" ? licenseNumber : undefined,
+      role: role || 'patient',
+      verificationStatus: role === 'doctor' ? 'pending' : 'verified'
     });
 
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    console.log('✅ User registered successfully:', user.userID);
+
+    return res.status(201).json({ 
+      success: true,
+      message: 'User registered successfully',
+      userId: user._id
+    });
+
   } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ message: "Server error during registration" });
+    console.error('❌ Registration error:', error);
+    
+    // Handle duplicate key error
+    if (error.code === 11000) {
+      if (error.keyPattern.email) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Email already exists' 
+        });
+      }
+      if (error.keyPattern.userID) {
+        // Retry registration if userID collision
+        console.log('⚠️ UserID collision, retrying...');
+        return exports.register(req, res);
+      }
+    }
+    
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error during registration',
+      error: error.message
+    });
   }
 };
 
-// 🔹 LOGIN
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check user exists
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    console.log('🔐 Login attempt for:', email);
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      console.log('❌ User not found');
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid email or password' 
+      });
+    }
 
-    // Create JWT token
-    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+    // Check password using the schema method
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      console.log('❌ Password mismatch');
+      return res.status(401).json({ 
+        success: false,
+        message: 'Invalid email or password' 
+      });
+    }
+
+    // Update last login
+    user.lastLogin = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user._id, 
+        role: user.role,
+        userID: user.userID 
+      },
+      process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+      { expiresIn: '7d' }
+    );
+
+    console.log('✅ Login successful for:', user.email, 'Role:', user.role);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        userID: user.userID,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        accountStatus: user.accountStatus
+      }
     });
 
-    res.status(200).json({ user, token });
   } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Server error during login" });
-  }
-};
-
-// 🔹 GET LOGGED-IN USER
-exports.getMe = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id).select("-password");
-    if (!user) return res.status(404).json({ message: "User not found" });
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    console.error('❌ Login error:', error);
+    return res.status(500).json({ 
+      success: false,
+      message: 'Server error during login' 
+    });
   }
 };

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import AuthContext from '../context/AuthContext';
 import { Activity, FileText, Users, Shield, Clock, Smartphone, TrendingUp, Lock } from 'lucide-react';
 
 const Home = () => {

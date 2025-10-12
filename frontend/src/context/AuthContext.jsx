@@ -1,82 +1,119 @@
-import { createContext, useState, useEffect } from "react";
-import axios from "axios";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
-export const AuthContext = createContext();
+const AuthContext = createContext();
 
-export default function AuthProvider({ children }) {
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Base API URL
-  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const [token, setToken] = useState(localStorage.getItem('token'));
+  const navigate = useNavigate(); // for programmatic navigation
 
   useEffect(() => {
-    // Check if token exists and verify it
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Verify token with backend
-      axios.get(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      .then(response => {
-        setUser(response.data.user);
-      })
-      .catch(() => {
-        localStorage.removeItem("token");
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-    } else {
-      setLoading(false);
-    }
+    checkAuth();
   }, []);
 
-  // Register function
+  const checkAuth = () => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        logout();
+      }
+    }
+    setLoading(false);
+  };
+
+  const login = async (email, password) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setToken(data.token);
+        setUser(data.user);
+        toast.success('Login successful!');
+        navigate('/home'); // redirect after login
+        return { success: true, user: data.user };
+      } else {
+        toast.error(data.message || 'Login failed');
+        return { success: false, message: data.message || 'Login failed' };
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Network error. Please try again.');
+      return { success: false, message: 'Network error. Please try again.' };
+    }
+  };
+
   const register = async (userData) => {
     try {
-      console.log('📝 Attempting registration to:', `${API_URL}/auth/register`);
-      const response = await axios.post(`${API_URL}/auth/register`, userData);
-      console.log('✅ Registration successful:', response.data);
-      return response.data;
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success('Registration successful! Logging you in...');
+        
+        // Automatically login after registration
+        await login(userData.email, userData.password);
+        return { success: true, user: JSON.parse(localStorage.getItem('user')) };
+      } else {
+        toast.error(data.message || 'Registration failed');
+        return { success: false, message: data.message || 'Registration failed' };
+      }
     } catch (error) {
-      console.error('❌ Registration error:', error);
-      throw error;
+      console.error('Registration error:', error);
+      toast.error('Network error. Please try again.');
+      return { success: false, message: 'Network error. Please try again.' };
     }
   };
 
-  // Login function
-  const login = async (credentials) => {
-    try {
-      console.log('🔐 Attempting login to:', `${API_URL}/auth/login`);
-      const response = await axios.post(`${API_URL}/auth/login`, credentials);
-      
-      const { token, user } = response.data;
-      
-      // Save token to localStorage
-      localStorage.setItem("token", token);
-      
-      // Set user state
-      setUser(user);
-      
-      console.log('✅ Login successful');
-      return user;
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      throw error;
-    }
-  };
-
-  // Logout function
   const logout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setToken(null);
     setUser(null);
+    navigate('/login');
+    toast.info('Logged out successfully');
   };
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, register, loading }}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  const value = {
+    user,
+    token,
+    loading,
+    login,
+    register,
+    logout,
+    isAuthenticated: !!token && !!user,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export default AuthContext;

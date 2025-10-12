@@ -11,14 +11,12 @@ const NotificationBell = () => {
   useEffect(() => {
     fetchNotifications();
     
-    // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);

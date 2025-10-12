@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import AuthContext from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import { Mail, Lock, Eye, EyeOff, LogIn } from 'lucide-react';
 
@@ -59,46 +59,41 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // ✅ FIXED: Pass object with email and password
       const userData = await login({
         email: formData.email,
         password: formData.password
       });
 
       console.log('✅ Login successful, user data:', userData);
-      
-      // Show success message with user name
+
+      // Show welcome toast
       toast.success(`Welcome back, ${userData.firstName || 'User'}!`, {
         autoClose: 2000
       });
 
-      // Wait a moment for toast, then redirect based on role
-      setTimeout(() => {
-        // ✅ FIXED: Match our routing structure
-        switch(userData.role) {
-          case 'patient':
-            navigate('/patient/dashboard');
-            break;
-          case 'doctor':
-            navigate('/doctor/dashboard');
-            break;
-          case 'admin':
-            navigate('/admin/dashboard');
-            break;
-          default:
-            navigate('/');
-        }
-      }, 1000);
+      // ✅ Navigate based on role
+      switch(userData.role) {
+        case 'patient':
+          navigate('/patient/dashboard');
+          break;
+        case 'doctor':
+          navigate('/doctor/dashboard');
+          break;
+        case 'admin':
+          navigate('/admin/dashboard');
+          break;
+        default:
+          navigate('/home'); // fallback
+      }
 
     } catch (error) {
       console.error('❌ Login error:', error);
-      
-      // Handle specific error messages
+
+      // Handle error messages
       if (error.response) {
         const errorMessage = error.response.data.message || 'Login failed';
         toast.error(errorMessage);
-        
-        // Handle specific error codes
+
         if (error.response.status === 401) {
           toast.error('Invalid email or password');
         } else if (error.response.status === 403) {
@@ -119,7 +114,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-purple-500 to-secondary-500 px-4 py-12">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-2xl p-8">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full mb-4 animate-pulse">
             <span className="text-3xl">🏥</span>
@@ -129,7 +123,7 @@ const Login = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Email Input */}
+          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Email Address <span className="text-red-500">*</span>
@@ -158,7 +152,7 @@ const Login = () => {
             )}
           </div>
 
-          {/* Password Input */}
+          {/* Password */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               Password <span className="text-red-500">*</span>
@@ -198,7 +192,6 @@ const Login = () => {
             )}
           </div>
 
-          {/* Forgot Password Link */}
           <div className="flex justify-end">
             <Link
               to="/forgot-password"
@@ -208,7 +201,6 @@ const Login = () => {
             </Link>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -227,7 +219,6 @@ const Login = () => {
             )}
           </button>
 
-          {/* Register Link */}
           <div className="text-center pt-4 border-t-2 border-gray-200">
             <p className="text-gray-600">
               Don't have an account?{' '}

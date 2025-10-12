@@ -1,20 +1,18 @@
 import React, { useContext, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import AuthContext from '../../context/AuthContext';
 import { Bell, Menu, X, LogOut, User, Home, Activity, FileText, Users, Shield } from 'lucide-react';
 import NotificationBell from "../notifications/NotificationBell";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const { user, logout } = useContext(AuthContext);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
+    logout(); // AuthContext already navigates to login and clears state
     toast.success('Logged out successfully');
-    navigate('/login');
   };
 
   return (
@@ -22,7 +20,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
+          <Link to="/home" className="flex items-center space-x-2 group">
             <div className="bg-gradient-to-r from-primary-500 to-secondary-500 p-2 rounded-lg group-hover:shadow-lg transition-all duration-300">
               <span className="text-2xl">🏥</span>
             </div>
@@ -35,8 +33,9 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-6">
             {!user ? (
               <>
+                {/* Public links */}
                 <Link
-                  to="/"
+                  to="/home"
                   className="text-gray-700 hover:text-primary-500 font-medium transition-colors duration-200 flex items-center space-x-1"
                 >
                   <Home size={18} />
@@ -57,6 +56,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                {/* Role-based links */}
                 {user.role === 'patient' && (
                   <>
                     <Link
@@ -194,7 +194,7 @@ const Navbar = () => {
             {!user ? (
               <div className="space-y-2">
                 <Link
-                  to="/"
+                  to="/home"
                   className="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >

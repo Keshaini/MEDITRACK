@@ -88,7 +88,7 @@ const Assignments = () => {
                   </div>
                   <span>Doctor-Patient Assignments</span>
                 </h1>
-                <p className="text-gray-600 mt-1">View and manage all assignments (DP002)</p>
+                <p className="text-gray-600 mt-1">View and manage all assignments</p>
               </div>
             </div>
             <button
