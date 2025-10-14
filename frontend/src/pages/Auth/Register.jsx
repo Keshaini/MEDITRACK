@@ -193,7 +193,7 @@ const Register = () => {
       // SUCCESS - Show success toast
       toast.success(
         'Account created successfully! Please login to continue.',
-        { autoClose: 3000 }
+        { autoClose: 1000 }
       );
       
       // Wait a moment for toast to show, then navigate after 1.0 seconds
@@ -844,7 +844,8 @@ const Register = () => {
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                <span>Creating Account...</span>
+                <span>Creating Account...</span>o
+
               </>
             ) : (
               <>

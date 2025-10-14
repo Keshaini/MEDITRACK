@@ -1,34 +1,35 @@
+// middleware/auth.js
 const jwt = require('jsonwebtoken');
 const User = require('../Models/User');
 
 const protect = async (req, res, next) => {
-   let token;
+  let token;
 
-   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      try {
-         // Get token from header
-         token = req.headers.authorization.split(' ')[1];
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    try {
+      token = req.headers.authorization.split(' ')[1];
 
-         // Verify token
-         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key');
+      // Verify token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
 
-         // Get user from token
-         req.user = await User.findById(decoded.id).select('-password');
+      // ✅ Notice we use decoded.userId (not decoded.id)
+      req.user = await User.findById(decoded.userId).select('-password');
 
-         if (!req.user) {
-            return res.status(401).json({ message: 'User not found' });
-         }
-
-         next();
-      } catch (err) {
-         console.error('Auth middleware error:', err);
-         return res.status(401).json({ message: 'Not authorized, token failed' });
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'User not found' });
       }
-   }
 
-   if (!token) {
-      return res.status(401).json({ message: 'Not authorized, no token' });
-   }
+      next();
+    } catch (err) {
+      console.error('❌ Auth middleware error:', err);
+      return res.status(401).json({ success: false, message: 'Not authorized, invalid or expired token' });
+    }
+  } else {
+    return res.status(401).json({ success: false, message: 'Not authorized, no token provided' });
+  }
 };
 
 module.exports = { protect };
+// You can add role-based access control middleware here if needed
+// e.g., const authorize = (roles) => { ... }
+// module.exports = { protect, authorize };  

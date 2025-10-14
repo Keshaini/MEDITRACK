@@ -1,119 +1,80 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useState, useEffect } from "react";
+import { registerUser, loginUser, getProfile } from "../services/authService";
+import { toast } from "react-toastify";
 
 const AuthContext = createContext();
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const navigate = useNavigate(); // for programmatic navigation
 
+  // --- Load user on mount ---
   useEffect(() => {
-    checkAuth();
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const profileData = await getProfile();
+          setUser(profileData);
+        }
+      } catch (err) {
+        console.error("Error loading user profile:", err.message);
+        localStorage.removeItem("token");
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUser();
   }, []);
 
-  const checkAuth = () => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        logout();
-      }
-    }
-    setLoading(false);
-  };
-
-  const login = async (email, password) => {
-    try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setToken(data.token);
-        setUser(data.user);
-        toast.success('Login successful!');
-        navigate('/home'); // redirect after login
-        return { success: true, user: data.user };
-      } else {
-        toast.error(data.message || 'Login failed');
-        return { success: false, message: data.message || 'Login failed' };
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Network error. Please try again.');
-      return { success: false, message: 'Network error. Please try again.' };
-    }
-  };
-
+  // --- Register new user ---
   const register = async (userData) => {
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success('Registration successful! Logging you in...');
-        
-        // Automatically login after registration
-        await login(userData.email, userData.password);
-        return { success: true, user: JSON.parse(localStorage.getItem('user')) };
-      } else {
-        toast.error(data.message || 'Registration failed');
-        return { success: false, message: data.message || 'Registration failed' };
-      }
+      const response = await registerUser(userData);
+      toast.success("Registration successful! Please login.");
+      return response;
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error('Network error. Please try again.');
-      return { success: false, message: 'Network error. Please try again.' };
+      console.error("Registration failed:", error.message);
+      throw error; // handled in Register.jsx
     }
   };
 
+  // --- Login user ---
+  const login = async (credentials) => {
+    try {
+      const response = await loginUser(credentials);
+      localStorage.setItem("token", response.token);
+      setUser(response.user);
+      toast.success("Login successful!");
+      return response;
+    } catch (error) {
+      console.error("Login failed:", error.message);
+      throw error;
+    }
+  };
+
+  // --- Logout user ---
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setToken(null);
+    localStorage.removeItem("token");
     setUser(null);
-    navigate('/login');
-    toast.info('Logged out successfully');
+    toast.info("Logged out successfully");
   };
 
-  const value = {
-    user,
-    token,
-    loading,
-    login,
-    register,
-    logout,
-    isAuthenticated: !!token && !!user,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        register,
+        login,
+        logout,
+        isAuthenticated: !!user,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
 export default AuthContext;

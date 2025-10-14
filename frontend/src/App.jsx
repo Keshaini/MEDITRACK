@@ -1,6 +1,9 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
@@ -49,15 +52,15 @@ import TwoFactorAuth from './components/security/TwoFactorAuth';
 import ChangePassword from './components/security/ChangePassword';
 import SecuritySettings from './components/security/SecuritySettings';
 
-// ✅ Layout component to conditionally show Navbar/Footer
+// Fallback
+import NotFound from './pages/NotFound'; 
+
+// ✅ Layout component
 const Layout = ({ children }) => {
   const location = useLocation();
-
-  // Hide Navbar & Footer on auth-related pages
-  const hideLayout = [
-    '/forgot-password',
-    '/reset-password',
-  ].some((path) => location.pathname.startsWith(path));
+  const hideLayout = ['/forgot-password', '/reset-password'].some(path =>
+    location.pathname.startsWith(path)
+  );
 
   return (
     <>
@@ -74,6 +77,10 @@ function App() {
       <Router>
         <AuthProvider>
           <NotificationProvider>
+            
+            {/* ✅ ToastContainer added globally */}
+            <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} />
+
             <Layout>
               <Routes>
                 {/* Public Routes */}
@@ -87,97 +94,37 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
 
                 {/* Patient Routes */}
-                <Route
-                  path="/patient/dashboard"
-                  element={<PrivateRoute allowedRoles={['patient']}><PatientDashboard /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/health-logs"
-                  element={<PrivateRoute allowedRoles={['patient']}><HealthLogList /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/health-logs/add"
-                  element={<PrivateRoute allowedRoles={['patient']}><AddHealthLog /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/health-logs/edit/:id"
-                  element={<PrivateRoute allowedRoles={['patient']}><EditHealthLog /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/medical-history"
-                  element={<PrivateRoute allowedRoles={['patient']}><ViewMedicalHistory /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/medical-history/add"
-                  element={<PrivateRoute allowedRoles={['patient']}><AddMedicalHistory /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/medical-history/upload"
-                  element={<PrivateRoute allowedRoles={['patient']}><AttachLabReports /></PrivateRoute>}
-                />
-                <Route
-                  path="/patient/medical-history/search"
-                  element={<PrivateRoute allowedRoles={['patient']}><SearchMedicalHistory /></PrivateRoute>}
-                />
+                <Route path="/patient/dashboard" element={<PrivateRoute allowedRoles={['patient']}><PatientDashboard /></PrivateRoute>} />
+                <Route path="/patient/health-logs" element={<PrivateRoute allowedRoles={['patient']}><HealthLogList /></PrivateRoute>} />
+                <Route path="/patient/health-logs/add" element={<PrivateRoute allowedRoles={['patient']}><AddHealthLog /></PrivateRoute>} />
+                <Route path="/patient/health-logs/edit/:id" element={<PrivateRoute allowedRoles={['patient']}><EditHealthLog /></PrivateRoute>} />
+                <Route path="/patient/medical-history" element={<PrivateRoute allowedRoles={['patient']}><ViewMedicalHistory /></PrivateRoute>} />
+                <Route path="/patient/medical-history/add" element={<PrivateRoute allowedRoles={['patient']}><AddMedicalHistory /></PrivateRoute>} />
+                <Route path="/patient/medical-history/upload" element={<PrivateRoute allowedRoles={['patient']}><AttachLabReports /></PrivateRoute>} />
+                <Route path="/patient/medical-history/search" element={<PrivateRoute allowedRoles={['patient']}><SearchMedicalHistory /></PrivateRoute>} />
 
                 {/* Doctor Routes */}
-                <Route
-                  path="/doctor/dashboard"
-                  element={<PrivateRoute allowedRoles={['doctor']}><DoctorDashboard /></PrivateRoute>}
-                />
-                <Route
-                  path="/doctor/patients"
-                  element={<PrivateRoute allowedRoles={['doctor']}><PatientList /></PrivateRoute>}
-                />
-                <Route
-                  path="/doctor/feedback"
-                  element={<PrivateRoute allowedRoles={['doctor']}><ProvideFeedback /></PrivateRoute>}
-                />
-                <Route
-                  path="/doctor/feedback/history"
-                  element={<PrivateRoute allowedRoles={['doctor']}><FeedbackHistory /></PrivateRoute>}
-                />
+                <Route path="/doctor/dashboard" element={<PrivateRoute allowedRoles={['doctor']}><DoctorDashboard /></PrivateRoute>} />
+                <Route path="/doctor/patients" element={<PrivateRoute allowedRoles={['doctor']}><PatientList /></PrivateRoute>} />
+                <Route path="/doctor/feedback" element={<PrivateRoute allowedRoles={['doctor']}><ProvideFeedback /></PrivateRoute>} />
+                <Route path="/doctor/feedback/history" element={<PrivateRoute allowedRoles={['doctor']}><FeedbackHistory /></PrivateRoute>} />
 
                 {/* Admin Routes */}
-                <Route
-                  path="/admin/dashboard"
-                  element={<PrivateRoute allowedRoles={['admin']}><AdminDashboard /></PrivateRoute>}
-                />
-                <Route
-                  path="/admin/users"
-                  element={<PrivateRoute allowedRoles={['admin']}><UserManagement /></PrivateRoute>}
-                />
-                <Route
-                  path="/admin/doctors"
-                  element={<PrivateRoute allowedRoles={['admin']}><DoctorVerification /></PrivateRoute>}
-                />
-                <Route
-                  path="/admin/assignments"
-                  element={<PrivateRoute allowedRoles={['admin']}><ViewAssignments /></PrivateRoute>}
-                />
+                <Route path="/admin/dashboard" element={<PrivateRoute allowedRoles={['admin']}><AdminDashboard /></PrivateRoute>} />
+                <Route path="/admin/users" element={<PrivateRoute allowedRoles={['admin']}><UserManagement /></PrivateRoute>} />
+                <Route path="/admin/doctors" element={<PrivateRoute allowedRoles={['admin']}><DoctorVerification /></PrivateRoute>} />
+                <Route path="/admin/assignments" element={<PrivateRoute allowedRoles={['admin']}><ViewAssignments /></PrivateRoute>} />
 
                 {/* Notifications */}
-                <Route
-                  path="/notifications"
-                  element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><NotificationList /></PrivateRoute>}
-                />
+                <Route path="/notifications" element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><NotificationList /></PrivateRoute>} />
 
                 {/* Security */}
-                <Route
-                  path="/security/2fa"
-                  element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><TwoFactorAuth /></PrivateRoute>}
-                />
-                <Route
-                  path="/security/change-password"
-                  element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><ChangePassword /></PrivateRoute>}
-                />
-                <Route
-                  path="/security/settings"
-                  element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><SecuritySettings /></PrivateRoute>}
-                />
+                <Route path="/security/2fa" element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><TwoFactorAuth /></PrivateRoute>} />
+                <Route path="/security/change-password" element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><ChangePassword /></PrivateRoute>} />
+                <Route path="/security/settings" element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><SecuritySettings /></PrivateRoute>} />
 
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/home" />} />
+                {/* 404 - Not Found */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Layout>
           </NotificationProvider>

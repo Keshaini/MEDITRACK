@@ -59,42 +59,46 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const userData = await login({
-        email: formData.email,
-        password: formData.password
-      });
+      // ✅ Pass the whole formData object, not separate args
+      const result = await login(formData);
 
-      console.log('✅ Login successful, user data:', userData);
+      console.log('📥 Login result:', result);
 
-      // Show welcome toast
-      toast.success(`Welcome back, ${userData.firstName || 'User'}!`, {
-        autoClose: 2000
-      });
+      if (result && result.token) {
+        const userData = result.user;
 
-      // ✅ Navigate based on role
-      switch(userData.role) {
-        case 'patient':
-          navigate('/patient/dashboard');
-          break;
-        case 'doctor':
-          navigate('/doctor/dashboard');
-          break;
-        case 'admin':
-          navigate('/admin/dashboard');
-          break;
-        default:
-          navigate('/home'); // fallback
+        toast.success(`Welcome back, ${userData.name || 'User'}!`, {
+          autoClose: 2000
+        });
+
+        // Navigate based on role
+        setTimeout(() => {
+          switch(userData.role) {
+            case 'patient':
+              window.location.href = '/patient/dashboard';
+              break;
+            case 'doctor':
+              window.location.href = '/doctor/dashboard';
+              break;
+            case 'admin':
+              window.location.href = '/admin/dashboard';
+              break;
+            default:
+              window.location.href = '/patient/dashboard';
+          }
+        }, 500);
+      } else {
+        toast.error('Login failed. Please try again.');
       }
 
     } catch (error) {
       console.error('❌ Login error:', error);
 
-      // Handle error messages
       if (error.response) {
-        const errorMessage = error.response.data.message || 'Login failed';
+        const errorMessage = error.response.data?.message || 'Login failed';
         toast.error(errorMessage);
 
-        if (error.response.status === 401) {
+        if (error.response.status === 400 || error.response.status === 401) {
           toast.error('Invalid email or password');
         } else if (error.response.status === 403) {
           toast.error('Your account is not active. Please contact support.');
@@ -103,6 +107,8 @@ const Login = () => {
         }
       } else if (error.request) {
         toast.error('Cannot connect to server. Please check your connection.');
+      } else if (error.message) {
+        toast.error(error.message);
       } else {
         toast.error('An unexpected error occurred. Please try again.');
       }
@@ -177,11 +183,7 @@ const Login = () => {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center"
               >
-                {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
-                ) : (
-                  <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
-                )}
+                {showPassword ? <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" /> : <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />}
               </button>
             </div>
             {errors.password && (
