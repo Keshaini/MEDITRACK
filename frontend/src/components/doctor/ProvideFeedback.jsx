@@ -117,7 +117,7 @@ const ProvideFeedback = () => {
                 </div>
                 <span>Provide Feedback</span>
               </h1>
-              <p className="text-gray-600 mt-1">Give medical feedback on patient health logs (DP001)</p>
+              <p className="text-gray-600 mt-1">Give medical feedback on patient health logs</p>
             </div>
           </div>
         </div>

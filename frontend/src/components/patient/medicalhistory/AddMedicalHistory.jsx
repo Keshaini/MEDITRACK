@@ -158,7 +158,7 @@ const AddMedicalHistory = () => {
                   </div>
                   <span>Add Medical History</span>
                 </h1>
-                <p className="text-gray-600 mt-2">Record your medical conditions and diagnoses (MH001)</p>
+                <p className="text-gray-600 mt-2">Record your medical conditions and diagnoses</p>
               </div>
             </div>
             <button

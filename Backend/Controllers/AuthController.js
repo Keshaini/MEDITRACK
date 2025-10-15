@@ -69,3 +69,21 @@ exports.login = async (req, res) => {
     return res.status(500).json({ message: 'Server error' });
   }
 };
+
+// Get logged-in user's profile
+exports.getProfile = async (req, res) => {
+  try {
+    // req.user is already populated by middleware
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('❌ Error fetching profile:', error);
+    res.status(500).json({ message: 'Unable to fetch user profile' });
+  }
+};
+
+// You can add more auth-related functions here (e.g., password reset, email verification)
+// e.g., exports.resetPassword = async (req, res) => { ... }
