@@ -1,15 +1,15 @@
 const mongoose = require("mongoose");
 
 const healthLogSchema = new mongoose.Schema({
-  userID: { 
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: "User", 
-    required: false 
-  },
-  log_date: { type: Date, default: Date.now },
-  blood_pressure: { type: String },
-  heart_rate: { type: Number },
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  date: { type: Date, default: Date.now }, // match controller naming
+  time: { type: String },
+  bloodPressure: { type: String },
+  heartRate: { type: Number },
+  temperature: { type: Number },
   weight: { type: Number },
+  bloodSugar: { type: Number },
+  oxygenSaturation: { type: Number },
   symptoms: { type: String },
   notes: { type: String }
 }, { timestamps: true });

@@ -19,6 +19,7 @@ const createHealthLog = async (req, res) => {
       oxygenSaturation: req.body.oxygenSaturation,
       symptoms: req.body.symptoms,
       notes: req.body.notes,
+      patientId: req.user._id   
       // If you have patient_id later from auth, add: patient_id: req.user?._id
     });
 
@@ -33,7 +34,7 @@ const createHealthLog = async (req, res) => {
 // ✅ Get all health logs
 const getHealthLogs = async (req, res) => {
   try {
-    const logs = await HealthLog.find();
+    const logs = await HealthLog.find({ patientId: req.user._id }).sort({ date: -1 });
     res.json(logs);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -43,7 +44,7 @@ const getHealthLogs = async (req, res) => {
 // ✅ Get a specific log
 const getHealthLogById = async (req, res) => {
   try {
-    const log = await HealthLog.findById(req.params.id);
+    const log = await HealthLog.findOne({ _id: req.params.id, patientId: req.user._id });
     if (!log) return res.status(404).json({ error: 'Health log not found' });
     res.json(log);
   } catch (err) {
@@ -54,7 +55,11 @@ const getHealthLogById = async (req, res) => {
 // ✅ Update log
 const updateHealthLog = async (req, res) => {
   try {
-    const updated = await HealthLog.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await HealthLog.findOneAndUpdate(
+      { _id: req.params.id, patientId: req.user._id },
+      req.body,
+      { new: true }
+    );
     if (!updated) return res.status(404).json({ error: 'Health log not found' });
     res.json(updated);
   } catch (err) {
@@ -65,7 +70,7 @@ const updateHealthLog = async (req, res) => {
 // ✅ Delete log
 const deleteHealthLog = async (req, res) => {
   try {
-    const deleted = await HealthLog.findByIdAndDelete(req.params.id);
+    const deleted = await HealthLog.findOneAndDelete({ _id: req.params.id, patientId: req.user._id });
     if (!deleted) return res.status(404).json({ error: 'Health log not found' });
     res.json({ message: 'Health log deleted successfully' });
   } catch (err) {
