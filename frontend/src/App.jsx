@@ -24,13 +24,12 @@ import PrivacyPolicy from './pages/Auth/PrivacyPolicy';
 
 // Patient Components
 import PatientDashboard from './pages/patient/PatientDashboard';
+import HealthLogs from './pages/patient/HealthLogs';
 import AddHealthLog from './components/patient/healthlog/AddHealthLog';
-import EditHealthLog from './components/patient/healthlog/EditHealthLog';
-import HealthLogList from './components/patient/healthlog/HealthLogList';
+import MedicalHistory from './pages/patient/MedicalHistory';
 import AddMedicalHistory from './components/patient/medicalhistory/AddMedicalHistory';
-import ViewMedicalHistory from './components/patient/medicalhistory/ViewMedicalHistory';
-import AttachLabReports from './components/patient/medicalhistory/AttachLabReports';
-import SearchMedicalHistory from './components/patient/medicalhistory/SearchMedicalHistory';
+import Profile from './pages/patient/Profile';
+import MyDoctors from './pages/patient/MyDoctors';
 
 // Doctor Components
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
@@ -93,15 +92,23 @@ function App() {
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
 
-                {/* Patient Routes */}
+                {/* Patient Routes - Updated to match PatientDashboard navigation */}
                 <Route path="/patient/dashboard" element={<PrivateRoute allowedRoles={['patient']}><PatientDashboard /></PrivateRoute>} />
-                <Route path="/patient/health-logs" element={<PrivateRoute allowedRoles={['patient']}><HealthLogList /></PrivateRoute>} />
-                <Route path="/patient/health-logs/add" element={<PrivateRoute allowedRoles={['patient']}><AddHealthLog /></PrivateRoute>} />
-                <Route path="/patient/health-logs/edit/:id" element={<PrivateRoute allowedRoles={['patient']}><EditHealthLog /></PrivateRoute>} />
-                <Route path="/patient/medical-history" element={<PrivateRoute allowedRoles={['patient']}><ViewMedicalHistory /></PrivateRoute>} />
-                <Route path="/patient/medical-history/add" element={<PrivateRoute allowedRoles={['patient']}><AddMedicalHistory /></PrivateRoute>} />
-                <Route path="/patient/medical-history/upload" element={<PrivateRoute allowedRoles={['patient']}><AttachLabReports /></PrivateRoute>} />
-                <Route path="/patient/medical-history/search" element={<PrivateRoute allowedRoles={['patient']}><SearchMedicalHistory /></PrivateRoute>} />
+                
+                {/* Health Logs Routes */}
+                <Route path="/patient/health-logs" element={<PrivateRoute allowedRoles={['patient']}><HealthLogs /></PrivateRoute>} />
+                <Route path="/patient/add-health-log" element={<PrivateRoute allowedRoles={['patient']}><AddHealthLog /></PrivateRoute>} />
+                
+                {/* Medical History Routes */}
+                <Route path="/patient/medical-history" element={<PrivateRoute allowedRoles={['patient']}><MedicalHistory /></PrivateRoute>} />
+                <Route path="/patient/add-medical-history" element={<PrivateRoute allowedRoles={['patient']}><AddMedicalHistory /></PrivateRoute>} />
+                
+                {/* Profile & Doctors */}
+                <Route path="/patient/profile" element={<PrivateRoute allowedRoles={['patient']}><Profile /></PrivateRoute>} />
+                <Route path="/patient/my-doctors" element={<PrivateRoute allowedRoles={['patient']}><MyDoctors /></PrivateRoute>} />
+                
+                {/* Notifications for Patient */}
+                <Route path="/patient/notifications" element={<PrivateRoute allowedRoles={['patient']}><NotificationList /></PrivateRoute>} />
 
                 {/* Doctor Routes */}
                 <Route path="/doctor/dashboard" element={<PrivateRoute allowedRoles={['doctor']}><DoctorDashboard /></PrivateRoute>} />

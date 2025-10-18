@@ -31,15 +31,28 @@ const createHealthLog = async (req, res) => {
   }
 };
 
-// ✅ Get all health logs
+// ✅ Get all health logs (Role-based access)
 const getHealthLogs = async (req, res) => {
   try {
-    const logs = await HealthLog.find({ patientId: req.user._id }).sort({ date: -1 });
-    res.json(logs);
+    let query = {};
+
+    // If the logged-in user is a patient, show only their logs
+    if (req.user.role === 'patient') {
+      query = { patientId: req.user._id };
+    }
+
+    // If doctor or admin, show all logs
+    const logs = await HealthLog.find(query)
+      .populate('patientId', 'firstName lastName email') // show basic patient info
+      .sort({ date: -1 });
+
+    res.status(200).json(logs);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('❌ Error fetching health logs:', err);
+    res.status(500).json({ error: 'Failed to fetch health logs' });
   }
 };
+
 
 // ✅ Get a specific log
 const getHealthLogById = async (req, res) => {
@@ -78,4 +91,32 @@ const deleteHealthLog = async (req, res) => {
   }
 };
 
-module.exports = { createHealthLog, getHealthLogs, getHealthLogById, updateHealthLog, deleteHealthLog };
+const getDashboardHealthSummary = async (req, res) => {
+  try {
+    const logs = await HealthLog.find({ patientId: req.user._id }).sort({ date: -1 });
+    const totalLogs = logs.length;
+    const recentLogs = logs.slice(0, 5);
+    const chartData = logs
+      .slice(0, 7)
+      .reverse()
+      .map(log => ({
+        date: log.date,
+        heartRate: log.heartRate || 0,
+        weight: log.weight || 0,
+        bloodPressure: log.bloodPressure || 'N/A',
+        temperature: log.temperature || 0,
+      }));
+
+    res.status(200).json({
+      totalLogs,
+      recentLogs,
+      chartData,
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard summary:', error);
+    res.status(500).json({ error: 'Failed to fetch health summary' });
+  }
+};
+
+
+module.exports = { createHealthLog, getHealthLogs, getHealthLogById, updateHealthLog, deleteHealthLog, getDashboardHealthSummary };

@@ -40,32 +40,57 @@ const PatientDashboard = () => {
   }, []);
 
   const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('token');
+  try {
+    setLoading(true);
+    const token = localStorage.getItem('token');
 
-      // Fetch all dashboard data
+      // Fetch all data in parallel
       const [healthLogsRes, medicalHistoryRes, doctorRes] = await Promise.all([
-        axios.get(`${API_URL}/healthlogs`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: [] })),
-        axios.get(`${API_URL}/medical`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: [] })),
-        axios.get(`${API_URL}/doctor/assigned`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }).catch(() => ({ data: null }))
+        axios
+          .get(`${API_URL}/healthlog`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() => ({ data: [] })),
+        axios
+          .get(`${API_URL}/medical`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() => ({ data: [] })),
+        axios
+          .get(`${API_URL}/doctor/assigned`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .catch(() => ({ data: null })),
       ]);
 
+      const healthLogs = healthLogsRes.data || [];
+      const medicalHistory = medicalHistoryRes.data || [];
+      const doctor = doctorRes.data;
+
+      // 🩺 Compute health stats
+      const avgHeartRate = healthLogs.length
+        ? (
+            healthLogs.reduce((sum, log) => sum + (log.heartRate || 0), 0) /
+            healthLogs.length
+          ).toFixed(1)
+        : 0;
+
+      const latestBP = healthLogs.length
+        ? healthLogs[healthLogs.length - 1].bloodPressure || 'N/A'
+        : 'N/A';
+
+      // ✅ Set dashboard data
       setDashboardData({
         stats: {
-          totalHealthLogs: healthLogsRes.data?.length || 0,
-          totalMedicalRecords: medicalHistoryRes.data?.length || 0,
-          assignedDoctor: doctorRes.data,
-          pendingAlerts: 0 // Placeholder, implement alert fetching logic if needed
+          totalHealthLogs: healthLogs.length,
+          totalMedicalRecords: medicalHistory.length,
+          avgHeartRate,
+          avgBP: latestBP,
+          assignedDoctor: doctor || null,
+          pendingAlerts: 0,
         },
-        recentHealthLogs: healthLogsRes.data?.slice(0, 5) || [],
-        recentMedicalHistory: medicalHistoryRes.data?.slice(0, 3) || []
+        recentHealthLogs: healthLogs.slice(-5).reverse(), // 5 latest logs
+        recentMedicalHistory: medicalHistory.slice(-3).reverse(),
       });
 
     } catch (error) {
@@ -73,8 +98,9 @@ const PatientDashboard = () => {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
-    }
-  };
+      }
+    };
+
 
   const handleLogout = () => {
     logout();

@@ -20,13 +20,15 @@ import {
   Droplet
 } from 'lucide-react';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const HealthLogs = () => {
   const navigate = useNavigate();
   const [healthLogs, setHealthLogs] = useState([]);
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, csetSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedLog, setSelectedLog] = useState(null);
@@ -214,36 +216,138 @@ const HealthLogs = () => {
     setShowDetailsModal(true);
   };
 
-  const exportToCSV = () => {
+  const exportToPDF = () => {
     if (filteredLogs.length === 0) {
       toast.warning('No data to export');
       return;
     }
 
-    const headers = ['Date', 'Time', 'Blood Pressure', 'Heart Rate', 'Temperature', 'Weight', 'Blood Sugar', 'Oxygen Saturation', 'Symptoms', 'Notes', 'Status'];
-    const csvData = filteredLogs.map(log => [
-      formatDate(log.date),
-      formatTime(log.time),
-      log.bloodPressure || 'N/A',
-      log.heartRate || 'N/A',
-      log.temperature || 'N/A',
-      log.weight || 'N/A',
-      log.bloodSugar || 'N/A',
-      log.oxygenSaturation || 'N/A',
-      log.symptoms || 'N/A',
-      log.notes || 'N/A',
-      getVitalStatus(log)
-    ]);
+    try {
+      const doc = new jsPDF();
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
 
-    const csv = [headers, ...csvData].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `health-logs-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
+      // Add Title
+      doc.setFontSize(20);
+      doc.setTextColor(31, 78, 121);
+      doc.text('MediTrack - Health Logs Report', 14, 20);
 
-    toast.success('Health logs exported successfully!');
+      // Add Date
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${currentDate}`, 14, 28);
+
+      // Add Summary Statistics
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text('Summary Statistics', 14, 38);
+      
+      doc.setFontSize(10);
+      const normalCount = filteredLogs.filter(log => getVitalStatus(log) === 'normal').length;
+      const warningCount = filteredLogs.filter(log => getVitalStatus(log) === 'warning').length;
+      const criticalCount = filteredLogs.filter(log => getVitalStatus(log) === 'critical').length;
+      
+      doc.text(`Total Logs: ${filteredLogs.length}`, 14, 45);
+      doc.setTextColor(34, 197, 94);
+      doc.text(`Normal: ${normalCount}`, 60, 45);
+      doc.setTextColor(234, 179, 8);
+      doc.text(`Warning: ${warningCount}`, 95, 45);
+      doc.setTextColor(239, 68, 68);
+      doc.text(`Critical: ${criticalCount}`, 135, 45);
+      
+      doc.setTextColor(0);
+
+      // Prepare table data
+      const tableData = filteredLogs.map(log => [
+        formatDate(log.date),
+        formatTime(log.time) || '-',
+        log.bloodPressure || 'N/A',
+        log.heartRate ? `${log.heartRate} bpm` : 'N/A',
+        log.temperature ? `${log.temperature}°F` : 'N/A',
+        log.weight ? `${log.weight} kg` : 'N/A',
+        log.bloodSugar ? `${log.bloodSugar} mg/dL` : 'N/A',
+        log.oxygenSaturation ? `${log.oxygenSaturation}%` : 'N/A',
+        getVitalStatus(log).toUpperCase()
+      ]);
+
+      // Add table
+      doc.autoTable({
+        startY: 55,
+        head: [['Date', 'Time', 'BP', 'Heart Rate', 'Temp', 'Weight', 'Blood Sugar', 'Oxygen', 'Status']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [31, 78, 121],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: 3
+        },
+        columnStyles: {
+          0: { cellWidth: 22 },
+          1: { cellWidth: 15 },
+          2: { cellWidth: 18 },
+          3: { cellWidth: 22 },
+          4: { cellWidth: 18 },
+          5: { cellWidth: 18 },
+          6: { cellWidth: 22 },
+          7: { cellWidth: 18 },
+          8: { cellWidth: 18 }
+        },
+        didParseCell: function(data) {
+          // Color code the status column
+          if (data.column.index === 8 && data.section === 'body') {
+            const status = data.cell.raw.toLowerCase();
+            if (status === 'normal') {
+              data.cell.styles.textColor = [34, 197, 94];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (status === 'warning') {
+              data.cell.styles.textColor = [234, 179, 8];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (status === 'critical') {
+              data.cell.styles.textColor = [239, 68, 68];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        },
+        margin: { top: 55, left: 14, right: 14 }
+      });
+
+      // Add footer with page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.width / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+        doc.text(
+          'MediTrack - Your Health Companion',
+          14,
+          doc.internal.pageSize.height - 10
+        );
+      }
+
+      // Save the PDF
+      const fileName = `MediTrack-HealthLogs-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+
+      toast.success('Health logs exported to PDF successfully!');
+
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error('Failed to export PDF');
+    }
   };
 
   if (loading) {
@@ -282,7 +386,7 @@ const HealthLogs = () => {
             </div>
             <div className="flex items-center space-x-3">
               <button
-                onClick={exportToCSV}
+                onClick={exportToPDF}
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center space-x-2"
               >
                 <Download size={18} />
