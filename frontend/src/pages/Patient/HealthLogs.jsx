@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from "jspdf-autotable";
 
 const HealthLogs = () => {
   const navigate = useNavigate();
@@ -274,7 +274,7 @@ const HealthLogs = () => {
       ]);
 
       // Add table
-      doc.autoTable({
+      autoTable(doc, {
         startY: 55,
         head: [['Date', 'Time', 'BP', 'Heart Rate', 'Temp', 'Weight', 'Blood Sugar', 'Oxygen', 'Status']],
         body: tableData,
