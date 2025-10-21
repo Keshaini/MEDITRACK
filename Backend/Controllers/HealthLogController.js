@@ -3,12 +3,21 @@ const HealthLog = require('../Models/HealthLog');
 // ✅ Create a new health log
 const createHealthLog = async (req, res) => {
   try {
-    // Validation: ensure at least date or one field exists
+    // ✅ Check if user is authenticated
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ error: 'User not authenticated. Please login again.' });
+    }
+
+    // Validation: ensure at least date exists
     if (!req.body.date) {
       return res.status(400).json({ error: 'Date is required' });
     }
 
+    console.log('✅ Creating health log for user:', req.user._id);
+    console.log('✅ Request body:', req.body);
+
     const newLog = new HealthLog({
+      patientId: req.user._id,  // ✅ Get from authenticated user
       date: req.body.date,
       time: req.body.time,
       bloodPressure: req.body.bloodPressure,
@@ -18,16 +27,19 @@ const createHealthLog = async (req, res) => {
       bloodSugar: req.body.bloodSugar,
       oxygenSaturation: req.body.oxygenSaturation,
       symptoms: req.body.symptoms,
-      notes: req.body.notes,
-      patientId: req.user._id   
-      // If you have patient_id later from auth, add: patient_id: req.user?._id
+      notes: req.body.notes
     });
 
     const savedLog = await newLog.save();
+    console.log('✅ Health log saved successfully:', savedLog._id);
+    
     res.status(201).json(savedLog);
   } catch (err) {
-    console.error('Error creating health log:', err);
-    res.status(500).json({ error: err.message });
+    console.error('❌ Error creating health log:', err);
+    res.status(500).json({ 
+      error: 'Failed to save health log',
+      message: err.message 
+    });
   }
 };
 
