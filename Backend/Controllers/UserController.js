@@ -107,4 +107,39 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser };
+// Get doctors assigned to a patient
+const getMyDoctors = async (req, res) => {
+  try {
+    // Find the patient and populate the assignedDoctor field
+    const patient = await User.findById(req.user._id)
+      .populate("assignedDoctor", "firstName lastName email specialization");
+
+    if (!patient) {
+      return res.status(404).json({ success: false, message: "Patient not found" });
+    }
+
+    if (!patient.assignedDoctor) {
+      return res.status(404).json({ success: false, message: "No assigned doctor found" });
+    }
+
+    res.json({ success: true, data: patient.assignedDoctor });
+  } catch (err) {
+    console.error("Error fetching assigned doctors:", err);
+    res.status(500).json({ success: false, message: "Server error while fetching assigned doctors" });
+  }
+};
+
+// Get patients assigned to a doctor
+const getAssignedPatients = async (req, res) => {
+  try {
+    const patients = await User.find({ assignedDoctor: req.user._id })
+      .select("firstName lastName email age gender");
+
+    res.json({ success: true, data: patients });
+  } catch (err) {
+    console.error("Error fetching assigned patients:", err);
+    res.status(500).json({ success: false, message: "Server error while fetching assigned patients" });
+  }
+};
+
+module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser, getMyDoctors, getAssignedPatients };
