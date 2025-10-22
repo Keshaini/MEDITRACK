@@ -129,16 +129,18 @@ const getMyDoctors = async (req, res) => {
   }
 };
 
-// Get patients assigned to a doctor
+// Get patients assigned to a specific doctor
 const getAssignedPatients = async (req, res) => {
   try {
-    const patients = await User.find({ assignedDoctor: req.user._id })
-      .select("firstName lastName email age gender");
+    if (req.user.role !== 'doctor') {
+      return res.status(403).json({ message: 'Access denied: Only doctors can view assigned patients.' });
+    }
 
-    res.json({ success: true, data: patients });
-  } catch (err) {
-    console.error("Error fetching assigned patients:", err);
-    res.status(500).json({ success: false, message: "Server error while fetching assigned patients" });
+    const patients = await User.find({ assignedDoctor: req.user._id, role: 'patient' }).select('-password');
+    res.status(200).json(patients);
+  } catch (error) {
+    console.error('❌ Error fetching assigned patients:', error);
+    res.status(500).json({ message: 'Server error while fetching assigned patients' });
   }
 };
 

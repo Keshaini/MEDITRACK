@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, Stethoscope, Calendar } from 'lucide-react';
+import axios from 'axios';
 
 const MyDoctors = () => {
   const [doctors, setDoctors] = useState([]);
@@ -12,9 +13,9 @@ const MyDoctors = () => {
   const fetchMyDoctors = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/patient/my-doctors', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const response = await axios.get(`${API_URL}/api/doctor/assigned`, { headers });{
+        headers: { Authorization : `Bearer ${token}` }
+      }
       if (response.ok) {
         const data = await response.json();
         setDoctors(data);

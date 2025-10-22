@@ -34,6 +34,7 @@ const PatientDashboard = () => {
   });
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+  const response = axios.get(`${API_URL}/users/doctor/assigned`);
 
   useEffect(() => {
     fetchDashboardData();
@@ -47,7 +48,7 @@ const PatientDashboard = () => {
       // Fetch all data in parallel
       const [healthLogsRes, medicalHistoryRes, doctorRes] = await Promise.all([
         axios
-          .get(`${API_URL}/healthlog`, {
+          .get(`${API_URL}/healthlogs`, {
             headers: { Authorization: `Bearer ${token}` },
           })
           .catch(() => ({ data: [] })),
@@ -57,7 +58,7 @@ const PatientDashboard = () => {
           })
           .catch(() => ({ data: [] })),
         axios
-          .get(`${API_URL}/doctor/assigned`, {
+          .get(`${API_URL}api/doctor/assigned`, {
             headers: { Authorization: `Bearer ${token}` },
           })
           .catch(() => ({ data: null })),
