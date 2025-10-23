@@ -34,7 +34,6 @@ const PatientDashboard = () => {
   });
 
   const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-  const response = axios.get(`${API_URL}/users/doctor/assigned`);
 
   useEffect(() => {
     fetchDashboardData();
@@ -45,62 +44,68 @@ const PatientDashboard = () => {
     setLoading(true);
     const token = localStorage.getItem('token');
 
-      // Fetch all data in parallel
-      const [healthLogsRes, medicalHistoryRes, doctorRes] = await Promise.all([
-        axios
-          .get(`${API_URL}/healthlogs`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .catch(() => ({ data: [] })),
-        axios
-          .get(`${API_URL}/medical`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .catch(() => ({ data: [] })),
-        axios
-          .get(`${API_URL}api/doctor/assigned`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .catch(() => ({ data: null })),
-      ]);
+    if (!token) {
+      toast.error('Please login again');
+      navigate('/login');
+      return;
+    }
 
-      const healthLogs = healthLogsRes.data || [];
-      const medicalHistory = medicalHistoryRes.data || [];
-      const doctor = doctorRes.data;
+    // Fetch all data in parallel
+    const [healthLogsRes, medicalHistoryRes, doctorRes] = await Promise.all([
+      axios.get(`${API_URL}/healthlogs`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => ({ data: [] })),
+      
+      axios.get(`${API_URL}/medical`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => ({ data: [] })),
+      
+      // ✅ FIX: Use correct endpoint
+      axios.get(`${API_URL}/assignments/my-doctors`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => ({ data: [] }))
+    ]);
 
-      // 🩺 Compute health stats
-      const avgHeartRate = healthLogs.length
-        ? (
-            healthLogs.reduce((sum, log) => sum + (log.heartRate || 0), 0) /
-            healthLogs.length
-          ).toFixed(1)
-        : 0;
+    const healthLogs = healthLogsRes.data || [];
+    const medicalHistory = medicalHistoryRes.data || [];
+    const assignments = doctorRes.data || [];
+    
+    // ✅ Get first assigned doctor
+    const doctor = assignments.length > 0 ? assignments[0].doctorId : null;
 
-      const latestBP = healthLogs.length
-        ? healthLogs[healthLogs.length - 1].bloodPressure || 'N/A'
-        : 'N/A';
+    // Compute health stats
+    const avgHeartRate = healthLogs.length
+      ? (
+          healthLogs.reduce((sum, log) => sum + (log.heartRate || 0), 0) /
+          healthLogs.length
+        ).toFixed(1)
+      : 0;
 
-      // ✅ Set dashboard data
-      setDashboardData({
-        stats: {
-          totalHealthLogs: healthLogs.length,
-          totalMedicalRecords: medicalHistory.length,
-          avgHeartRate,
-          avgBP: latestBP,
-          assignedDoctor: doctor || null,
-          pendingAlerts: 0,
-        },
-        recentHealthLogs: healthLogs.slice(-5).reverse(), // 5 latest logs
-        recentMedicalHistory: medicalHistory.slice(-3).reverse(),
-      });
+    const latestBP = healthLogs.length
+      ? healthLogs[healthLogs.length - 1].bloodPressure || 'N/A'
+      : 'N/A';
 
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      toast.error('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-      }
-    };
+    // Set dashboard data
+    setDashboardData({
+      stats: {
+        totalHealthLogs: healthLogs.length,
+        totalMedicalRecords: medicalHistory.length,
+        avgHeartRate,
+        avgBP: latestBP,
+        assignedDoctor: doctor || null,
+        pendingAlerts: 0,
+      },
+      recentHealthLogs: healthLogs.slice(-5).reverse(),
+      recentMedicalHistory: medicalHistory.slice(-3).reverse(),
+    });
+
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    toast.error('Failed to load dashboard data');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const handleLogout = () => {
