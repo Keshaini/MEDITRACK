@@ -240,7 +240,7 @@ const EditHealthLog = () => {
                   </div>
                   <span>Edit Health Log</span>
                 </h1>
-                <p className="text-gray-600 mt-2">Update your vital signs (HL002)</p>
+                <p className="text-gray-600 mt-2">Update your vital signs</p>
               </div>
             </div>
           </div>

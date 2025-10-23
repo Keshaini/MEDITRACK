@@ -144,4 +144,41 @@ const getAssignedPatients = async (req, res) => {
   }
 };
 
-module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser, getMyDoctors, getAssignedPatients };
+// Get user profile
+const getUserProfile = async (req, res) => {
+  try {
+    console.log('🔍 getUserProfile called');
+    console.log('🔍 req.user:', req.user);
+    console.log('🔍 req.user._id:', req.user?._id);
+    
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('✅ User found:', user.email);
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('❌ Error fetching profile:', error);
+    res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+};
+
+// Update user profile
+const updateUserProfile = async (req, res) => {
+  try {
+    const { firstName, lastName, phone, dateOfBirth, address, gender, bloodGroup } = req.body;
+    
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { firstName, lastName, phone, phoneNumber: phone, dateOfBirth, address, gender, bloodGroup },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};
+
+module.exports = { createUser, getUsers, getUserById, updateUser, deleteUser, getMyDoctors, getAssignedPatients, getUserProfile, updateUserProfile };

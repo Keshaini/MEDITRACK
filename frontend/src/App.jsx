@@ -26,6 +26,7 @@ import PrivacyPolicy from './pages/Auth/PrivacyPolicy';
 import PatientDashboard from './pages/patient/PatientDashboard';
 import HealthLogs from './pages/patient/HealthLogs';
 import AddHealthLog from './components/patient/healthlog/AddHealthLog';
+import EditHealthLog from './components/patient/healthlog/EditHealthLog';
 import MedicalHistory from './pages/patient/MedicalHistory';
 import AddMedicalHistory from './components/patient/medicalhistory/AddMedicalHistory';
 import Profile from './pages/patient/Profile';
@@ -98,6 +99,7 @@ function App() {
                 {/* Health Logs Routes */}
                 <Route path="/patient/health-logs" element={<PrivateRoute allowedRoles={['patient']}><HealthLogs /></PrivateRoute>} />
                 <Route path="/patient/add-health-log" element={<PrivateRoute allowedRoles={['patient']}><AddHealthLog /></PrivateRoute>} />
+                <Route path="/patient/edit-health-log/:id" element={<PrivateRoute allowedRoles={['patient']}><EditHealthLog /></PrivateRoute>} />
                 
                 {/* Medical History Routes */}
                 <Route path="/patient/medical-history" element={<PrivateRoute allowedRoles={['patient']}><MedicalHistory /></PrivateRoute>} />

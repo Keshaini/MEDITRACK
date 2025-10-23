@@ -8,10 +8,13 @@ const {
     updateUser,
     deleteUser,
     getMyDoctors,
-    getAssignedPatients
+    getAssignedPatients,
+    getUserProfile,
+    updateUserProfile
 } = require('../Controllers/UserController');
 
-
+router.get('/profile', auth, getUserProfile);
+router.put('/profile', auth, updateUserProfile);
 router.get('/patient/my-doctors', auth, getMyDoctors);
 router.get('/doctor/assigned', auth, getAssignedPatients);
 router.post('/', createUser); // Create a new user
