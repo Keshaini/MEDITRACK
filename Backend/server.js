@@ -39,7 +39,7 @@ app.use('/api/loginattempts', require('./Routes/LoginAttemptRoute'));
 app.use('/api/auditlogs', require('./Routes/AuditLogRoute'));
 app.use('/api/access', require('./Routes/AccessRoute'));
 app.use('/api/assignments', require('./Routes/AssignmentRoute'));
-
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Start the server
 app.listen(PORT, () => {
    console.log(`Server started on port ${PORT}`);

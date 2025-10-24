@@ -54,19 +54,19 @@ const AdminDashboard = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
 
-      // Fetch all admin dashboard data
+      // ✅ FIX: Use correct endpoints
       const [usersRes, assignmentsRes] = await Promise.all([
-        axios.get(`${API_URL}/admin/users`, {
+        axios.get(`${API_URL}/users`, {  // Changed from /admin/users
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: [] })),
-        axios.get(`${API_URL}/admin/assignments`, {
+        axios.get(`${API_URL}/assignments/all`, {  // Changed from /admin/assignments
           headers: { Authorization: `Bearer ${token}` }
         }).catch(() => ({ data: [] }))
       ]);
 
-      const users = usersRes.data || [];
-      const assignments = assignmentsRes.data || [];
-
+      const users = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.data || []);
+      const assignments = Array.isArray(assignmentsRes.data) ? assignmentsRes.data : (assignmentsRes.data?.data || []);
+      
       // Calculate stats
       const patients = users.filter(u => u.role === 'patient');
       const doctors = users.filter(u => u.role === 'doctor');
