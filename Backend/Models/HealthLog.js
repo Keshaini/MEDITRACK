@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const healthLogSchema = new mongoose.Schema({
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  date: { type: Date, default: Date.now }, // match controller naming
+  date: { type: Date, default: Date.now }, 
   time: { type: String },
   bloodPressure: { type: String },
   heartRate: { type: Number },

@@ -43,6 +43,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './components/admin/UserManagement';
 import DoctorVerification from './components/admin/DoctorVerification';
 import ViewAssignments from './components/admin/ViewAssignments';
+import AssignDoctor from './components/admin/AssignDocctor';
 
 // Notifications
 import NotificationList from './components/notifications/NotificationList';
@@ -123,6 +124,8 @@ function App() {
                 <Route path="/admin/users" element={<PrivateRoute allowedRoles={['admin']}><UserManagement /></PrivateRoute>} />
                 <Route path="/admin/doctors" element={<PrivateRoute allowedRoles={['admin']}><DoctorVerification /></PrivateRoute>} />
                 <Route path="/admin/assignments" element={<PrivateRoute allowedRoles={['admin']}><ViewAssignments /></PrivateRoute>} />
+                <Route path="/admin/assign-doctor" element={<PrivateRoute allowedRoles={['admin']}><AssignDoctor /></PrivateRoute>} />
+                <Route path="/admin/verifications" element={<DoctorVerification />} />
 
                 {/* Notifications */}
                 <Route path="/notifications" element={<PrivateRoute allowedRoles={['patient','doctor','admin']}><NotificationList /></PrivateRoute>} />

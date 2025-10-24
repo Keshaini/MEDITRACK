@@ -13,9 +13,12 @@ import {
   UserX, 
   MoreVertical,
   ArrowLeft,
-  Eye
+  Eye,
+  Download
 } from 'lucide-react';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -132,6 +135,155 @@ const UserManagement = () => {
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user');
+    }
+  };
+
+  const exportToPDF = () => {
+    if (filteredUsers.length === 0) {
+      toast.warning('No users to export');
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      // Add Title
+      doc.setFontSize(22);
+      doc.setTextColor(220, 38, 38);
+      doc.text('MediTrack - User Management Report', 14, 20);
+
+      // Add Date
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Generated on: ${currentDate}`, 14, 28);
+      doc.text(`Total Users: ${filteredUsers.length}`, 14, 34);
+
+      // Add Summary Statistics
+      doc.setFontSize(12);
+      doc.setTextColor(0);
+      doc.text('Summary Statistics', 14, 44);
+      
+      doc.setFontSize(10);
+      const totalUsers = filteredUsers.length;
+      const activeUsers = filteredUsers.filter(u => u.accountStatus === 'Active').length;
+      const doctors = filteredUsers.filter(u => u.role === 'doctor').length;
+      const patients = filteredUsers.filter(u => u.role === 'patient').length;
+      const admins = filteredUsers.filter(u => u.role === 'admin').length;
+      
+      doc.text(`Active: ${activeUsers}`, 14, 51);
+      doc.setTextColor(34, 197, 94);
+      doc.text(`Doctors: ${doctors}`, 55, 51);
+      doc.setTextColor(59, 130, 246);
+      doc.text(`Patients: ${patients}`, 95, 51);
+      doc.setTextColor(168, 85, 247);
+      doc.text(`Admins: ${admins}`, 135, 51);
+      
+      doc.setTextColor(0);
+
+      // Prepare table data
+      const tableData = filteredUsers.map(user => [
+        `${user.firstName} ${user.lastName}`,
+        user.email,
+        user.role?.toUpperCase() || 'N/A',
+        user.accountStatus || 'N/A',
+        user.phone || 'N/A',
+        new Date(user.createdAt).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        })
+      ]);
+
+      // Add table
+      doc.autoTable({
+        startY: 60,
+        head: [['Name', 'Email', 'Role', 'Status', 'Phone', 'Joined']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [220, 38, 38],
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: 3
+        },
+        columnStyles: {
+          0: { cellWidth: 35 },
+          1: { cellWidth: 45 },
+          2: { cellWidth: 20 },
+          3: { cellWidth: 20 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 25 }
+        },
+        didParseCell: function(data) {
+          // Color code the role column
+          if (data.column.index === 2 && data.section === 'body') {
+            const role = data.cell.raw.toLowerCase();
+            if (role === 'doctor') {
+              data.cell.styles.textColor = [34, 197, 94];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (role === 'patient') {
+              data.cell.styles.textColor = [59, 130, 246];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (role === 'admin') {
+              data.cell.styles.textColor = [168, 85, 247];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+          // Color code the status column
+          if (data.column.index === 3 && data.section === 'body') {
+            const status = data.cell.raw.toLowerCase();
+            if (status === 'active') {
+              data.cell.styles.textColor = [34, 197, 94];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (status === 'inactive') {
+              data.cell.styles.textColor = [239, 68, 68];
+              data.cell.styles.fontStyle = 'bold';
+            } else if (status === 'pending') {
+              data.cell.styles.textColor = [234, 179, 8];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        },
+        margin: { top: 60, left: 14, right: 14 }
+      });
+
+      // Add footer with page numbers
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128);
+        doc.text(
+          `Page ${i} of ${pageCount}`,
+          doc.internal.pageSize.width / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+        doc.text(
+          'MediTrack Admin Portal - Confidential',
+          14,
+          doc.internal.pageSize.height - 10
+        );
+      }
+
+      // Save the PDF
+      const fileName = `MediTrack-Users-${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+
+      toast.success('User report exported to PDF successfully!');
+
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast.error('Failed to export PDF');
     }
   };
 

@@ -86,7 +86,7 @@ const Login = () => {
             default:
               window.location.href = '/patient/dashboard';
           }
-        }, 500);
+        }, 1000);
       } else {
         toast.error('Login failed. Please try again.');
       }

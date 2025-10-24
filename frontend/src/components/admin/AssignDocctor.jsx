@@ -41,8 +41,8 @@ const AssignDoctor = () => {
       const usersRes = await axios.get(`${API_URL}/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-
-      const allUsers = usersRes.data || [];
+      
+      const allUsers = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.data || []);
       const patientList = allUsers.filter(u => u.role === 'patient');
       const doctorList = allUsers.filter(u => u.role === 'doctor');
 
