@@ -26,8 +26,121 @@ const Payments = () => {
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
 
-  // Payment data - will be populated from backend
-  const [payments, setPayments] = useState([]);
+  // Sample payment data
+  const [payments] = useState([
+    {
+      id: 'PAY-001',
+      patientName: 'John Doe',
+      patientId: 'P-12345',
+      doctorName: 'Dr. Sarah Smith',
+      amount: 150.00,
+      date: '2025-10-24',
+      time: '10:30 AM',
+      status: 'completed',
+      method: 'Credit Card',
+      transactionId: 'TXN-789456123',
+      description: 'General Consultation',
+      invoiceNumber: 'INV-2025-001'
+    },
+    {
+      id: 'PAY-002',
+      patientName: 'Jane Smith',
+      patientId: 'P-12346',
+      doctorName: 'Dr. Michael Johnson',
+      amount: 280.00,
+      date: '2025-10-24',
+      time: '09:15 AM',
+      status: 'completed',
+      method: 'Debit Card',
+      transactionId: 'TXN-789456124',
+      description: 'Cardiology Check-up',
+      invoiceNumber: 'INV-2025-002'
+    },
+    {
+      id: 'PAY-003',
+      patientName: 'Robert Brown',
+      patientId: 'P-12347',
+      doctorName: 'Dr. Emily Davis',
+      amount: 320.00,
+      date: '2025-10-23',
+      time: '02:45 PM',
+      status: 'pending',
+      method: 'Bank Transfer',
+      transactionId: 'TXN-789456125',
+      description: 'Orthopedic Consultation',
+      invoiceNumber: 'INV-2025-003'
+    },
+    {
+      id: 'PAY-004',
+      patientName: 'Lisa Anderson',
+      patientId: 'P-12348',
+      doctorName: 'Dr. Sarah Smith',
+      amount: 195.00,
+      date: '2025-10-23',
+      time: '11:20 AM',
+      status: 'completed',
+      method: 'Cash',
+      transactionId: 'TXN-789456126',
+      description: 'Follow-up Appointment',
+      invoiceNumber: 'INV-2025-004'
+    },
+    {
+      id: 'PAY-005',
+      patientName: 'David Wilson',
+      patientId: 'P-12349',
+      doctorName: 'Dr. Michael Johnson',
+      amount: 450.00,
+      date: '2025-10-22',
+      time: '03:30 PM',
+      status: 'failed',
+      method: 'Credit Card',
+      transactionId: 'TXN-789456127',
+      description: 'Surgical Consultation',
+      invoiceNumber: 'INV-2025-005'
+    },
+    {
+      id: 'PAY-006',
+      patientName: 'Emma Martinez',
+      patientId: 'P-12350',
+      doctorName: 'Dr. Emily Davis',
+      amount: 175.00,
+      date: '2025-10-22',
+      time: '01:15 PM',
+      status: 'completed',
+      method: 'Insurance',
+      transactionId: 'TXN-789456128',
+      description: 'Physical Therapy Session',
+      invoiceNumber: 'INV-2025-006'
+    },
+    {
+      id: 'PAY-007',
+      patientName: 'Michael Taylor',
+      patientId: 'P-12351',
+      doctorName: 'Dr. Sarah Smith',
+      amount: 225.00,
+      date: '2025-10-21',
+      time: '10:00 AM',
+      status: 'pending',
+      method: 'Credit Card',
+      transactionId: 'TXN-789456129',
+      description: 'Dental Check-up',
+      invoiceNumber: 'INV-2025-007'
+    },
+    {
+      id: 'PAY-008',
+      patientName: 'Sarah Johnson',
+      patientId: 'P-12352',
+      doctorName: 'Dr. Michael Johnson',
+      amount: 340.00,
+      date: '2025-10-21',
+      time: '04:45 PM',
+      status: 'completed',
+      method: 'Debit Card',
+      transactionId: 'TXN-789456130',
+      description: 'Laboratory Tests',
+      invoiceNumber: 'INV-2025-008'
+    }
+  ]);
 
   // Calculate statistics
   const stats = {

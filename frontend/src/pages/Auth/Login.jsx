@@ -68,7 +68,7 @@ const Login = () => {
         const userData = result.user;
 
         toast.success(`Welcome back, ${userData.name || 'User'}!`, {
-          autoClose: 2000
+          autoClose: 1000
         });
 
         // Navigate based on role
