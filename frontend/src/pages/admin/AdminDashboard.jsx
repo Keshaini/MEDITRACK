@@ -66,7 +66,7 @@ const AdminDashboard = () => {
 
       const users = Array.isArray(usersRes.data) ? usersRes.data : (usersRes.data?.data || []);
       const assignments = Array.isArray(assignmentsRes.data) ? assignmentsRes.data : (assignmentsRes.data?.data || []);
-      
+
       // Calculate stats
       const patients = users.filter(u => u.role === 'patient');
       const doctors = users.filter(u => u.role === 'doctor');
@@ -326,6 +326,15 @@ const AdminDashboard = () => {
             >
               <Eye className="text-purple-600 mb-2" size={32} />
               <span className="text-sm font-semibold text-gray-700">View Assignments</span>
+            </button>
+
+            {/* ✅ New Payments Button */}
+            <button
+              onClick={() => navigate('/admin/payments')}
+              className="flex flex-col items-center justify-center p-6 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl hover:shadow-lg transition-all duration-300 hover:scale-105"
+          >
+              <Activity className="text-pink-600 mb-2" size={32} />
+              <span className="text-sm font-semibold text-gray-700">Manage Payments</span>
             </button>
 
             <button

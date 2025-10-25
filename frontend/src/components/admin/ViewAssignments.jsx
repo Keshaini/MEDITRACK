@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { Link as LinkIcon, Plus, Search, Trash2, Eye, ArrowLeft, AlertCircle, Download } from 'lucide-react';
 import axios from 'axios';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const ViewAssignments = () => {
   const navigate = useNavigate();
@@ -29,7 +29,6 @@ const ViewAssignments = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      // ✅ FIX: Use correct endpoint
       const response = await axios.get(`${API_URL}/assignments/all`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -76,7 +75,6 @@ const ViewAssignments = () => {
     try {
       const token = localStorage.getItem('token');
       
-      // ✅ FIX: Use correct endpoint
       await axios.delete(`${API_URL}/assignments/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -144,7 +142,7 @@ const ViewAssignments = () => {
         a.status?.toUpperCase() || 'ACTIVE'
       ]);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: 55,
         head: [['Patient', 'Doctor', 'Specialization', 'Assigned Date', 'Status']],
         body: tableData,

@@ -1,533 +1,655 @@
-import React, { useState } from 'react';
-import { Settings, Bell, Lock, Database, Mail, Globe, Save, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import {
+  Settings,
+  Mail,
+  Users,
+  Shield,
+  Bell,
+  Database,
+  Globe,
+  Lock,
+  Save,
+  ArrowLeft,
+  RefreshCw,
+  Server,
+  Clock
+} from 'lucide-react';
 
 const SystemSettings = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
-  const [saveStatus, setSaveStatus] = useState('');
   
-  const [settings, setSettings] = useState({
-    general: {
-      siteName: 'MediTrack',
-      siteUrl: 'https://meditrack.com',
-      adminEmail: 'admin@meditrack.com',
-      timezone: 'UTC+5:30',
-      dateFormat: 'DD/MM/YYYY',
-      language: 'English'
-    },
-    notifications: {
-      emailNotifications: true,
-      smsNotifications: false,
-      pushNotifications: true,
-      appointmentReminders: true,
-      systemAlerts: true,
-      marketingEmails: false
-    },
-    security: {
-      twoFactorAuth: true,
-      sessionTimeout: '30',
-      passwordExpiry: '90',
-      loginAttempts: '5',
-      ipWhitelist: false,
-      auditLog: true
-    },
-    database: {
-      autoBackup: true,
-      backupFrequency: 'daily',
-      retentionPeriod: '30',
-      lastBackup: '2025-10-25 02:00 AM',
-      databaseSize: '2.4 GB'
-    },
-    email: {
-      smtpHost: 'smtp.gmail.com',
-      smtpPort: '587',
-      smtpUsername: 'noreply@meditrack.com',
-      smtpEncryption: 'TLS',
-      fromName: 'MediTrack System',
-      fromEmail: 'noreply@meditrack.com'
-    }
+  // General Settings
+  const [generalSettings, setGeneralSettings] = useState({
+    siteName: 'MediTrack',
+    siteDescription: 'Healthcare Management System',
+    maintenanceMode: false,
+    registrationEnabled: true,
+    maxUsersPerDoctor: 50,
+    sessionTimeout: 30
   });
 
-  const handleInputChange = (section, field, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [field]: value
-      }
-    }));
+  // Email Settings
+  const [emailSettings, setEmailSettings] = useState({
+    smtpHost: 'smtp.gmail.com',
+    smtpPort: '587',
+    smtpUsername: 'admin@meditrack.com',
+    smtpPassword: '',
+    fromEmail: 'noreply@meditrack.com',
+    fromName: 'MediTrack System',
+    emailVerificationRequired: true
+  });
+
+  // User Limits
+  const [userLimits, setUserLimits] = useState({
+    maxPatients: 1000,
+    maxDoctors: 100,
+    maxAdmins: 10,
+    maxHealthLogsPerPatient: 500,
+    maxMedicalRecordsPerPatient: 200
+  });
+
+  // Security Settings
+  const [securitySettings, setSecuritySettings] = useState({
+    passwordMinLength: 8,
+    passwordRequireUppercase: true,
+    passwordRequireNumbers: true,
+    passwordRequireSpecialChars: true,
+    maxLoginAttempts: 5,
+    lockoutDuration: 15,
+    twoFactorAuthEnabled: false
+  });
+
+  // Notification Settings
+  const [notificationSettings, setNotificationSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    pushNotifications: true,
+    notifyOnNewUser: true,
+    notifyOnCriticalVitals: true,
+    notifyOnAssignment: true
+  });
+
+  const handleGeneralChange = (field, value) => {
+    setGeneralSettings(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSave = () => {
-    setSaveStatus('saving');
+  const handleEmailChange = (field, value) => {
+    setEmailSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleUserLimitChange = (field, value) => {
+    setUserLimits(prev => ({ ...prev, [field]: parseInt(value) || 0 }));
+  };
+
+  const handleSecurityChange = (field, value) => {
+    setSecuritySettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNotificationChange = (field, value) => {
+    setNotificationSettings(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveSettings = () => {
+    setLoading(true);
+    
     // Simulate API call
     setTimeout(() => {
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus(''), 3000);
+      toast.success('Settings saved successfully!');
+      setLoading(false);
     }, 1000);
   };
 
+  const handleResetToDefaults = () => {
+    if (window.confirm('Are you sure you want to reset all settings to default values?')) {
+      toast.info('Settings reset to defaults');
+    }
+  };
+
   const tabs = [
-    { id: 'general', label: 'General', icon: Settings },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'security', label: 'Security', icon: Lock },
-    { id: 'database', label: 'Database', icon: Database },
-    { id: 'email', label: 'Email', icon: Mail }
+    { id: 'general', label: 'General', icon: <Settings size={18} /> },
+    { id: 'email', label: 'Email', icon: <Mail size={18} /> },
+    { id: 'limits', label: 'User Limits', icon: <Users size={18} /> },
+    { id: 'security', label: 'Security', icon: <Shield size={18} /> },
+    { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Settings className="w-8 h-8" />
-            System Settings
-          </h1>
-          <p className="text-gray-600 mt-2">Manage your system configuration and preferences</p>
+        <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/admin/dashboard')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft size={24} className="text-gray-600" />
+              </button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center">
+                    <Settings className="text-white" size={24} />
+                  </div>
+                  <span>System Settings</span>
+                </h1>
+                <p className="text-gray-600 mt-1">Configure system-wide settings and preferences</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={handleResetToDefaults}
+                className="px-4 py-2 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors flex items-center space-x-2"
+              >
+                <RefreshCw size={18} />
+                <span>Reset</span>
+              </button>
+              <button
+                onClick={handleSaveSettings}
+                disabled={loading}
+                className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-600 text-white font-bold rounded-lg hover:shadow-lg transition-all flex items-center space-x-2 disabled:opacity-50"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    <span>Save Changes</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Save Status Alert */}
-        {saveStatus && (
-          <div className={`mb-4 p-4 rounded-lg flex items-center gap-2 ${
-            saveStatus === 'saved' ? 'bg-green-50 text-green-800' : 'bg-blue-50 text-blue-800'
-          }`}>
-            <AlertCircle className="w-5 h-5" />
-            <span>{saveStatus === 'saved' ? 'Settings saved successfully!' : 'Saving settings...'}</span>
-          </div>
-        )}
-
-        <div className="bg-white rounded-lg shadow-sm">
-          {/* Tabs */}
-          <div className="border-b border-gray-200">
-            <div className="flex overflow-x-auto">
-              {tabs.map(tab => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-4 border-b-2 font-medium transition-colors whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    {tab.label}
-                  </button>
-                );
-              })}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Sidebar Tabs */}
+          <div className="col-span-12 lg:col-span-3">
+            <div className="bg-white rounded-xl shadow-md p-4 space-y-2">
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg font-semibold transition-all ${
+                    activeTab === tab.id
+                      ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  {tab.icon}
+                  <span>{tab.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Tab Content */}
-          <div className="p-6">
-            {/* General Settings */}
-            {activeTab === 'general' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">General Settings</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Site Name
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.general.siteName}
-                      onChange={(e) => handleInputChange('general', 'siteName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Site URL
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.general.siteUrl}
-                      onChange={(e) => handleInputChange('general', 'siteUrl', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Admin Email
-                    </label>
-                    <input
-                      type="email"
-                      value={settings.general.adminEmail}
-                      onChange={(e) => handleInputChange('general', 'adminEmail', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Timezone
-                    </label>
-                    <select
-                      value={settings.general.timezone}
-                      onChange={(e) => handleInputChange('general', 'timezone', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option>UTC+5:30</option>
-                      <option>UTC+0</option>
-                      <option>UTC-5</option>
-                      <option>UTC+8</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Date Format
-                    </label>
-                    <select
-                      value={settings.general.dateFormat}
-                      onChange={(e) => handleInputChange('general', 'dateFormat', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option>DD/MM/YYYY</option>
-                      <option>MM/DD/YYYY</option>
-                      <option>YYYY-MM-DD</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Language
-                    </label>
-                    <select
-                      value={settings.general.language}
-                      onChange={(e) => handleInputChange('general', 'language', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option>English</option>
-                      <option>Spanish</option>
-                      <option>French</option>
-                      <option>German</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Notifications Settings */}
-            {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">Notification Settings</h2>
-                
-                <div className="space-y-4">
-                  {Object.entries(settings.notifications).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <label className="font-medium text-gray-900 capitalize">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}
-                        </label>
-                        <p className="text-sm text-gray-600">
-                          {key === 'emailNotifications' && 'Receive email notifications for important events'}
-                          {key === 'smsNotifications' && 'Get SMS alerts for critical updates'}
-                          {key === 'pushNotifications' && 'Browser push notifications'}
-                          {key === 'appointmentReminders' && 'Automatic appointment reminder notifications'}
-                          {key === 'systemAlerts' && 'System maintenance and update alerts'}
-                          {key === 'marketingEmails' && 'Promotional and marketing communications'}
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={value}
-                          onChange={(e) => handleInputChange('notifications', key, e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Security Settings */}
-            {activeTab === 'security' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">Security Settings</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="md:col-span-2">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <label className="font-medium text-gray-900">Two-Factor Authentication</label>
-                        <p className="text-sm text-gray-600">Add an extra layer of security to user accounts</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.security.twoFactorAuth}
-                          onChange={(e) => handleInputChange('security', 'twoFactorAuth', e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Session Timeout (minutes)
-                    </label>
-                    <input
-                      type="number"
-                      value={settings.security.sessionTimeout}
-                      onChange={(e) => handleInputChange('security', 'sessionTimeout', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Password Expiry (days)
-                    </label>
-                    <input
-                      type="number"
-                      value={settings.security.passwordExpiry}
-                      onChange={(e) => handleInputChange('security', 'passwordExpiry', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Max Login Attempts
-                    </label>
-                    <input
-                      type="number"
-                      value={settings.security.loginAttempts}
-                      onChange={(e) => handleInputChange('security', 'loginAttempts', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <label className="font-medium text-gray-900">IP Whitelist</label>
-                        <p className="text-sm text-gray-600">Restrict access to specific IP addresses</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.security.ipWhitelist}
-                          onChange={(e) => handleInputChange('security', 'ipWhitelist', e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <label className="font-medium text-gray-900">Audit Log</label>
-                        <p className="text-sm text-gray-600">Keep detailed logs of all system activities</p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={settings.security.auditLog}
-                          onChange={(e) => handleInputChange('security', 'auditLog', e.target.checked)}
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Database Settings */}
-            {activeTab === 'database' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">Database Settings</h2>
-                
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          {/* Content Area */}
+          <div className="col-span-12 lg:col-span-9">
+            <div className="bg-white rounded-xl shadow-md p-6">
+              {/* General Settings */}
+              {activeTab === 'general' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <Settings className="text-orange-500" size={24} />
+                    <span>General Settings</span>
+                  </h2>
+                  
+                  <div className="space-y-6">
                     <div>
-                      <label className="font-medium text-gray-900">Automatic Backup</label>
-                      <p className="text-sm text-gray-600">Enable automatic database backups</p>
-                    </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Site Name</label>
                       <input
-                        type="checkbox"
-                        checked={settings.database.autoBackup}
-                        onChange={(e) => handleInputChange('database', 'autoBackup', e.target.checked)}
-                        className="sr-only peer"
+                        type="text"
+                        value={generalSettings.siteName}
+                        onChange={(e) => handleGeneralChange('siteName', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
                       />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Backup Frequency
-                      </label>
-                      <select
-                        value={settings.database.backupFrequency}
-                        onChange={(e) => handleInputChange('database', 'backupFrequency', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={!settings.database.autoBackup}
-                      >
-                        <option value="hourly">Hourly</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
-                      </select>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Retention Period (days)
-                      </label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Site Description</label>
+                      <textarea
+                        value={generalSettings.siteDescription}
+                        onChange={(e) => handleGeneralChange('siteDescription', e.target.value)}
+                        rows="3"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Session Timeout (minutes)</label>
                       <input
                         type="number"
-                        value={settings.database.retentionPeriod}
-                        onChange={(e) => handleInputChange('database', 'retentionPeriod', e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        disabled={!settings.database.autoBackup}
+                        value={generalSettings.sessionTimeout}
+                        onChange={(e) => handleGeneralChange('sessionTimeout', parseInt(e.target.value))}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Max Patients Per Doctor</label>
+                      <input
+                        type="number"
+                        value={generalSettings.maxUsersPerDoctor}
+                        onChange={(e) => handleGeneralChange('maxUsersPerDoctor', parseInt(e.target.value))}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Maintenance Mode</p>
+                        <p className="text-sm text-gray-600">Disable access for all users except admins</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={generalSettings.maintenanceMode}
+                          onChange={(e) => handleGeneralChange('maintenanceMode', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">User Registration</p>
+                        <p className="text-sm text-gray-600">Allow new users to register</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={generalSettings.registrationEnabled}
+                          onChange={(e) => handleGeneralChange('registrationEnabled', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Email Settings */}
+              {activeTab === 'email' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <Mail className="text-orange-500" size={24} />
+                    <span>Email Configuration</span>
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">SMTP Host</label>
+                        <input
+                          type="text"
+                          value={emailSettings.smtpHost}
+                          onChange={(e) => handleEmailChange('smtpHost', e.target.value)}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">SMTP Port</label>
+                        <input
+                          type="text"
+                          value={emailSettings.smtpPort}
+                          onChange={(e) => handleEmailChange('smtpPort', e.target.value)}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">SMTP Username</label>
+                      <input
+                        type="text"
+                        value={emailSettings.smtpUsername}
+                        onChange={(e) => handleEmailChange('smtpUsername', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">SMTP Password</label>
+                      <input
+                        type="password"
+                        value={emailSettings.smtpPassword}
+                        onChange={(e) => handleEmailChange('smtpPassword', e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">From Email</label>
+                        <input
+                          type="email"
+                          value={emailSettings.fromEmail}
+                          onChange={(e) => handleEmailChange('fromEmail', e.target.value)}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">From Name</label>
+                        <input
+                          type="text"
+                          value={emailSettings.fromName}
+                          onChange={(e) => handleEmailChange('fromName', e.target.value)}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Email Verification Required</p>
+                        <p className="text-sm text-gray-600">Require email verification for new users</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={emailSettings.emailVerificationRequired}
+                          onChange={(e) => handleEmailChange('emailVerificationRequired', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* User Limits */}
+              {activeTab === 'limits' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <Users className="text-orange-500" size={24} />
+                    <span>User & Data Limits</span>
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Maximum Patients</label>
+                      <input
+                        type="number"
+                        value={userLimits.maxPatients}
+                        onChange={(e) => handleUserLimitChange('maxPatients', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Maximum Doctors</label>
+                      <input
+                        type="number"
+                        value={userLimits.maxDoctors}
+                        onChange={(e) => handleUserLimitChange('maxDoctors', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Maximum Admins</label>
+                      <input
+                        type="number"
+                        value={userLimits.maxAdmins}
+                        onChange={(e) => handleUserLimitChange('maxAdmins', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Max Health Logs Per Patient</label>
+                      <input
+                        type="number"
+                        value={userLimits.maxHealthLogsPerPatient}
+                        onChange={(e) => handleUserLimitChange('maxHealthLogsPerPatient', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Max Medical Records Per Patient</label>
+                      <input
+                        type="number"
+                        value={userLimits.maxMedicalRecordsPerPatient}
+                        onChange={(e) => handleUserLimitChange('maxMedicalRecordsPerPatient', e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
                       />
                     </div>
                   </div>
+                </div>
+              )}
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h3 className="font-medium text-blue-900 mb-2">Database Information</h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-blue-700">Last Backup:</span>
-                        <span className="font-medium text-blue-900">{settings.database.lastBackup}</span>
+              {/* Security Settings */}
+              {activeTab === 'security' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <Shield className="text-orange-500" size={24} />
+                    <span>Security Settings</span>
+                  </h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Minimum Password Length</label>
+                      <input
+                        type="number"
+                        value={securitySettings.passwordMinLength}
+                        onChange={(e) => handleSecurityChange('passwordMinLength', parseInt(e.target.value))}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Max Login Attempts</label>
+                        <input
+                          type="number"
+                          value={securitySettings.maxLoginAttempts}
+                          onChange={(e) => handleSecurityChange('maxLoginAttempts', parseInt(e.target.value))}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-blue-700">Database Size:</span>
-                        <span className="font-medium text-blue-900">{settings.database.databaseSize}</span>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Lockout Duration (minutes)</label>
+                        <input
+                          type="number"
+                          value={securitySettings.lockoutDuration}
+                          onChange={(e) => handleSecurityChange('lockoutDuration', parseInt(e.target.value))}
+                          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-gray-900">Require Uppercase Letters</p>
+                          <p className="text-sm text-gray-600">Passwords must contain uppercase letters</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={securitySettings.passwordRequireUppercase}
+                            onChange={(e) => handleSecurityChange('passwordRequireUppercase', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-gray-900">Require Numbers</p>
+                          <p className="text-sm text-gray-600">Passwords must contain numbers</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={securitySettings.passwordRequireNumbers}
+                            onChange={(e) => handleSecurityChange('passwordRequireNumbers', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-gray-900">Require Special Characters</p>
+                          <p className="text-sm text-gray-600">Passwords must contain special characters</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={securitySettings.passwordRequireSpecialChars}
+                            onChange={(e) => handleSecurityChange('passwordRequireSpecialChars', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
+                      </div>
+
+                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <p className="font-semibold text-gray-900">Two-Factor Authentication</p>
+                          <p className="text-sm text-gray-600">Enable 2FA for all users</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={securitySettings.twoFactorAuthEnabled}
+                            onChange={(e) => handleSecurityChange('twoFactorAuthEnabled', e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                        </label>
                       </div>
                     </div>
                   </div>
+                </div>
+              )}
 
-                  <div className="flex gap-3">
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                      Backup Now
-                    </button>
-                    <button className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                      Restore Backup
-                    </button>
+              {/* Notification Settings */}
+              {activeTab === 'notifications' && (
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+                    <Bell className="text-orange-500" size={24} />
+                    <span>Notification Preferences</span>
+                  </h2>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Email Notifications</p>
+                        <p className="text-sm text-gray-600">Send notifications via email</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.emailNotifications}
+                          onChange={(e) => handleNotificationChange('emailNotifications', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">SMS Notifications</p>
+                        <p className="text-sm text-gray-600">Send notifications via SMS</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.smsNotifications}
+                          onChange={(e) => handleNotificationChange('smsNotifications', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Push Notifications</p>
+                        <p className="text-sm text-gray-600">Send browser push notifications</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.pushNotifications}
+                          onChange={(e) => handleNotificationChange('pushNotifications', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">New User Registration</p>
+                        <p className="text-sm text-gray-600">Notify admins when new users register</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.notifyOnNewUser}
+                          onChange={(e) => handleNotificationChange('notifyOnNewUser', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Critical Vitals Alert</p>
+                        <p className="text-sm text-gray-600">Notify when patient vitals are critical</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.notifyOnCriticalVitals}
+                          onChange={(e) => handleNotificationChange('notifyOnCriticalVitals', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <p className="font-semibold text-gray-900">Patient Assignment</p>
+                        <p className="text-sm text-gray-600">Notify doctors when assigned new patients</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={notificationSettings.notifyOnAssignment}
+                          onChange={(e) => handleNotificationChange('notifyOnAssignment', e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-orange-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-orange-500"></div>
+                      </label>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Email Settings */}
-            {activeTab === 'email' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">Email Configuration</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SMTP Host
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.email.smtpHost}
-                      onChange={(e) => handleInputChange('email', 'smtpHost', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SMTP Port
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.email.smtpPort}
-                      onChange={(e) => handleInputChange('email', 'smtpPort', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SMTP Username
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.email.smtpUsername}
-                      onChange={(e) => handleInputChange('email', 'smtpUsername', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      SMTP Encryption
-                    </label>
-                    <select
-                      value={settings.email.smtpEncryption}
-                      onChange={(e) => handleInputChange('email', 'smtpEncryption', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                      <option>TLS</option>
-                      <option>SSL</option>
-                      <option>None</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      From Name
-                    </label>
-                    <input
-                      type="text"
-                      value={settings.email.fromName}
-                      onChange={(e) => handleInputChange('email', 'fromName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      From Email
-                    </label>
-                    <input
-                      type="email"
-                      value={settings.email.fromEmail}
-                      onChange={(e) => handleInputChange('email', 'fromEmail', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Send Test Email
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Save Button */}
-          <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saveStatus === 'saving'}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
-            >
-              <Save className="w-5 h-5" />
-              {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
-            </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
